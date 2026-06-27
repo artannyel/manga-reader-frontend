@@ -68,19 +68,17 @@ This checklist tracks the implementation of features for the Manga Reader Flutte
 
 ---
 
-## [ ] Phase 4: Chapter Reader
-*   [ ] **4.1 Chapter Loading & URL Assembly**
-    *   [ ] Create dynamic URL builder parsing chapter image paths using `MANGADEX_UPLOADS_URL`.
-*   [ ] **4.2 Continuous Scroll Mode**
-    *   [ ] Construct vertical lazy-loader list parsing image page indexes.
-    *   [ ] Configure caching restrictions, retry buttons, and loaders.
-*   [ ] **4.3 Page View Mode**
-    *   [ ] Build horizontal viewport layout using Flutter's `PageView`.
-*   [ ] **4.4 Reader Progress tracking**
-    *   [ ] Map reader gestures to show/hide overlay control tools.
-    *   [ ] Record current reading page index status inside Riverpod states.
-    *   [ ] Connect Isar update hooks updating database page percentages upon scrolling or page changes.
-    *   [ ] Add remote backend sync API service calls updates.
+## [x] Phase 4: Chapter Reader
+*   [x] **Continuous Scroll Mode**
+    *   [x] Construct vertical lazy-loader list parsing image page indexes.
+    *   [x] Configure caching restrictions, retry buttons, and loaders.
+*   [x] **Page View Mode**
+    *   [x] Build horizontal viewport layout using Flutter's `PageView`.
+*   [x] **Reader Progress tracking**
+    *   [x] Map reader gestures to show/hide overlay control tools.
+    *   [x] Record current reading page index status inside Riverpod states.
+    *   [x] Connect Isar update hooks updating database page percentages upon scrolling or page changes.
+    *   [x] Add remote backend sync API service calls updates.
 
 ---
 

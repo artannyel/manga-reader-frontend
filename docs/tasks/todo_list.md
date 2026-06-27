@@ -7,24 +7,23 @@ This checklist tracks the implementation of features for the Manga Reader Flutte
 ## [ ] Phase 1: Core Setup, Routing & Theme
 *   [ ] **1.1 Project Dependencies**
     *   [ ] Add `flutter_riverpod` and state management packages to `pubspec.yaml`.
-    *   [ ] Add `go_router` navigation package.
-    *   [ ] Add `dio` HTTP client.
-    *   [ ] Add `flutter_secure_storage` secure keychain storage.
-    *   [ ] Add `isar` and `isar_flutter_libs` database packages.
-    *   [ ] Add `connectivity_plus` network detection package.
-    *   [ ] Add `flutter_local_notifications` notification manager.
-    *   [ ] Add `path_provider` support directory helper.
-    *   [ ] Add `cached_network_image` caching helper.
-    *   [ ] Run `flutter pub get`.
-*   [ ] **1.2 Directory Structure**
-    *   [ ] Create core folder templates: `lib/core/{network,router,theme,services,widgets,utils}`.
-    *   [ ] Initialize feature directory structure under `lib/features/` (`auth`, `library`, `search`, `details`, `reader`, `downloads`).
-*   [ ] **1.3 Branding & Theme**
-    *   [ ] Setup `app_theme.dart` colors containing Dark Mode default and Light Mode options.
-    *   [ ] Map primary Red branding colors and fonts inside material design parameters.
-*   [ ] **1.4 Basic Routing**
-    *   [ ] Create router instance configuration containing all route paths.
-    *   [ ] Implement basic shell page widgets acting as navigation layout targets.
+## [x] Phase 1: Core Setup, Routing & Theme
+*   [x] **Dependencies Setup**
+    *   [x] Add packages in `pubspec.yaml`
+    *   [x] Run `flutter pub get` successfully
+*   [x] **Core Directory Structuring**
+    *   [x] Create `lib/core/` subfolders (`router/`, `network/`, `theme/`, `services/`, `widgets/`, `utils/`)
+*   [x] **Theme Setup**
+    *   [x] Implement light and default dark mode in `app_theme.dart` (Red primary highlight)
+*   [x] **Placeholder Screens**
+    *   [x] Create simple placeholders widgets for Login, Register, Home, Search, Details, Reader, Downloads, and Offline screens in pt-BR
+*   [x] **Router Configuration**
+    *   [x] Implement GoRouter in `app_router.dart` exposing a Provider
+    *   [x] Configure `StatefulShellRoute` navigation shell
+    *   [x] Connect router configuration in `lib/main.dart`
+*   [x] **Testing & Verification**
+    *   [x] Verify compilation success and correct theme loaded
+    *   [x] Implement and run startup widget tests
 
 ---
 

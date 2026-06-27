@@ -27,23 +27,27 @@ This checklist tracks the implementation of features for the Manga Reader Flutte
 
 ---
 
-## [ ] Phase 2: Auth Flow
-*   [ ] **2.1 Token persistence setup**
-    *   [ ] Create `SecureStorageService` instance.
-    *   [ ] Add helper functions to read, save, and wipe string tokens.
-*   [ ] **2.2 Network Interceptor**
-    *   [ ] Create `DioClient` provider class.
-    *   [ ] Implement request headers injection interceptor for `Authorization: Bearer <token>`.
-    *   [ ] Implement response `401 Unauthorized` interceptor forcing session cleanup.
-*   [ ] **2.3 Authentication States**
-    *   [ ] Create `AuthUser` data models.
-    *   [ ] Define Riverpod states enum representing authentication progress.
-    *   [ ] Implement `AuthNotifier` logic handling Login and Register API queries.
-*   [ ] **2.4 Screens & Integration**
-    *   [ ] Design login screen widget inputs (email, password validation).
-    *   [ ] Design registration screen forms.
-    *   [ ] Integrate `authProvider` to control UI loaders and display dialogs.
-    *   [ ] Wire GoRouter redirect filters based on authentication state values.
+## [x] Phase 2: Auth Flow
+*   [x] **Token Persistence**
+    *   [x] Configure secure storage provider wrapping `FlutterSecureStorage`.
+*   [x] **Network Interceptors**
+    *   [x] Build request interceptor to append authorization token.
+    *   [x] Build response interceptor to intercept `401 Unauthorized` states and trigger logout.
+*   [x] **Clean Architecture Layers**
+    *   [x] Create pure domain objects (User, UseCases, Repositories interfaces).
+    *   [x] Create data mapping objects (UserModel, AuthResponse).
+    *   [x] Create Dio remote datasource executing backend endpoints.
+    *   [x] Create repository implementations coordinating token storage.
+*   [x] **State Management**
+    *   [x] Implement `AuthState` sealed structure class.
+    *   [x] Create `authProvider` notifier executing login/register/logout use cases.
+*   [x] **Form & Inputs Validation**
+    *   [x] Re-implement `LoginScreen` using pt-BR validation strings.
+    *   [x] Re-implement `RegisterScreen` with matching password checks.
+*   [x] **Navigation Redirection**
+    *   [x] Add GoRouter guards evaluating auth token validity.
+*   [x] **Verification**
+    *   [x] Implement and verify state transition unit tests.
 
 ---
 

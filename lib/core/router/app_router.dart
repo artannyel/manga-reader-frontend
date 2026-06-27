@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/providers/auth_provider.dart';
+import '../../features/auth/presentation/providers/auth_state.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/library/presentation/screens/home_screen.dart';
@@ -13,10 +15,57 @@ import '../../features/downloads/presentation/screens/offline_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
+class RouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+
+  RouterNotifier(this._ref) {
+    _ref.listen(authProvider, (previous, next) {
+      notifyListeners();
+    });
+  }
+}
+
+final routerNotifierProvider = Provider<RouterNotifier>((ref) {
+  return RouterNotifier(ref);
+});
+
 final routerProvider = Provider<GoRouter>((ref) {
+  final routerNotifier = ref.watch(routerNotifierProvider);
+
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/login',
+    refreshListenable: routerNotifier,
+    redirect: (context, state) {
+      final authState = ref.read(authProvider);
+
+      // Do not redirect while checking initial auth status
+      if (authState is AuthInitial) {
+        return null;
+      }
+
+      final isAuthenticated = authState is AuthAuthenticated;
+      final location = state.matchedLocation;
+
+      final isLoggingIn = location == '/login';
+      final isRegistering = location == '/register';
+      final isOffline = location == '/offline';
+      final isDownloads = location == '/downloads';
+
+      if (!isAuthenticated) {
+        // If not authenticated and trying to access a private route
+        if (!isLoggingIn && !isRegistering && !isOffline && !isDownloads) {
+          return '/login';
+        }
+      } else {
+        // If authenticated and trying to access login/register
+        if (isLoggingIn || isRegistering) {
+          return '/';
+        }
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/login',

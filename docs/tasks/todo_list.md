@@ -51,23 +51,20 @@ This checklist tracks the implementation of features for the Manga Reader Flutte
 
 ---
 
-## [ ] Phase 3: Feed, Search & Details
-*   [ ] **3.1 Home / Library Feed**
-    *   [ ] Construct library grid UI view displaying saved manga covers.
-    *   [ ] Create library fetcher services pulling content lists from database/API.
-*   [ ] **3.2 Search Interface**
-    *   [ ] Construct Search input interface with genre filtering buttons.
-    *   [ ] Add debounce utility timer delay to trigger API requests 500ms after text typing stops.
-    *   [ ] Render search result list views.
-*   [ ] **3.3 Details View**
-    *   [ ] Create blurred cover background detail viewport.
-    *   [ ] Render title, description, genres, and chronological list of chapters.
-    *   [ ] Implement favorite toggle button mapping details directly into library tracking list.
-*   [ ] **3.4 Database Initialization**
-    *   [ ] Setup Isar service initialization config.
-    *   [ ] Define `MangaEntity` schema entity code.
-    *   [ ] Define `ChapterEntity` schema entity code.
-    *   [ ] Generate database model helpers schema.
+## [x] Phase 3: Feed, Search & Details
+*   [x] **Home / Library Feed**
+    *   [x] Construct library grid UI view displaying saved manga covers.
+    *   [x] Create library fetcher services pulling content lists from database/API.
+*   [x] **Search Interface**
+    *   [x] Design search input fields supporting text queries debouncing.
+    *   [x] Implement filters and fetch results from proxy.
+*   [x] **Manga Details Sheet**
+    *   [x] Design blurred cover header backdrop overlays.
+    *   [x] Design chapter listing views with sorting methods.
+*   [x] **Isar Service hookup**
+    *   [x] Instantiate and register Isar instance in main application wrapper.
+*   [x] **Verification**
+    *   [x] Assert debounce execution limits and cover layouts.
 
 ---
 

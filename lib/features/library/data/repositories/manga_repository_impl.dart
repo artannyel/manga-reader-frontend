@@ -9,6 +9,7 @@ import '../models/chapter_entity.dart';
 import '../models/chapter_model.dart';
 import '../models/manga_entity.dart';
 import '../models/manga_model.dart';
+import '../models/chapter_pages_model.dart';
 
 final mangaRepositoryImplProvider = Provider<MangaRepository>((ref) {
   final remote = ref.watch(mangaRemoteDataSourceProvider);
@@ -209,5 +210,53 @@ class MangaRepositoryImpl implements MangaRepository {
   @override
   Future<bool> isFavorite(String id) async {
     return await _localDataSource.isFavorite(id);
+  }
+
+  @override
+  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data'}) async {
+    try {
+      final localChap = await _localDataSource.getChapter(chapterId);
+      if (localChap != null &&
+          localChap.downloadStatus == DownloadStatus.downloaded &&
+          localChap.localPagePaths != null &&
+          localChap.localPagePaths!.isNotEmpty) {
+        return localChap.localPagePaths!;
+      }
+    } catch (_) {}
+
+    final json = await _remoteDataSource.fetchChapterPages(chapterId, quality: quality);
+    final model = ChapterPagesModel.fromJson(json, targetQuality: quality);
+    return model.pageUrls;
+  }
+
+  @override
+  Future<void> updateReadingProgress(String chapterId, int pageIndex) async {
+    final localChap = await _localDataSource.getChapter(chapterId);
+    if (localChap != null) {
+      final pagesCount = localChap.pagesCount > 0 ? localChap.pagesCount : 1;
+      final percentage = (((pageIndex + 1) / pagesCount) * 100).clamp(0.0, 100.0);
+      await _localDataSource.updateChapterProgress(chapterId, pageIndex, percentage);
+    }
+    
+    // Trigger remote sync asynchronously to not block the caller or cause lag
+    _remoteDataSource.updateReadingProgress(chapterId, pageIndex).catchError((_) {});
+  }
+
+  @override
+  Future<Chapter?> fetchChapter(String chapterId) async {
+    final entity = await _localDataSource.getChapter(chapterId);
+    if (entity == null) return null;
+    return Chapter(
+      id: entity.mangaDexId,
+      mangaId: entity.mangaId,
+      chapterNumber: entity.chapterNumber,
+      title: entity.title,
+      pagesCount: entity.pagesCount,
+      downloadStatus: entity.downloadStatus,
+      localPagePaths: entity.localPagePaths,
+      lastReadPage: entity.lastReadPage,
+      readPercentage: entity.readPercentage,
+      lastReadAt: entity.lastReadAt,
+    );
   }
 }

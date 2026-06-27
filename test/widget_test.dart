@@ -7,6 +7,7 @@ import 'package:manga_reader/features/auth/domain/entities/user.dart';
 import 'package:manga_reader/features/library/domain/repositories/manga_repository.dart';
 import 'package:manga_reader/features/library/domain/entities/manga.dart';
 import 'package:manga_reader/features/library/domain/entities/manga_details.dart';
+import 'package:manga_reader/features/library/domain/entities/chapter.dart';
 
 class MockAuthRepository implements AuthRepository {
   @override
@@ -57,6 +58,19 @@ class MockMangaRepository implements MangaRepository {
 
   @override
   Future<bool> isFavorite(String id) async => false;
+
+  @override
+  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data'}) async {
+    return const [];
+  }
+
+  @override
+  Future<void> updateReadingProgress(String chapterId, int pageIndex) async {}
+
+  @override
+  Future<Chapter?> fetchChapter(String chapterId) async {
+    return null;
+  }
 }
 
 void main() {

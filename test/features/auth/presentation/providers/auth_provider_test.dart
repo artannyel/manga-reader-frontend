@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:manga_reader/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:manga_reader/features/auth/domain/entities/user.dart';
 import 'package:manga_reader/features/auth/domain/repositories/auth_repository.dart';
 import 'package:manga_reader/features/auth/presentation/providers/auth_provider.dart';

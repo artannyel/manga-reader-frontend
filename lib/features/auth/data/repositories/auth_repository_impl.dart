@@ -4,7 +4,7 @@ import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
 
-final Provider<AuthRepository> authRepositoryProvider = Provider<AuthRepository>((ref) {
+final Provider<AuthRepository> authRepositoryImplProvider = Provider<AuthRepository>((ref) {
   final remoteDataSource = ref.watch(authRemoteDataSourceProvider);
   final secureStorage = ref.watch(secureStorageServiceProvider);
   return AuthRepositoryImpl(remoteDataSource, secureStorage);

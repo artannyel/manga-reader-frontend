@@ -1,4 +1,7 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../entities/user.dart';
+
+final authRepositoryProvider = Provider<AuthRepository>((ref) => throw UnimplementedError());
 
 abstract class AuthRepository {
   Future<User> login({

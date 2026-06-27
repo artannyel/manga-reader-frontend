@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../entities/chapter.dart';
 import '../entities/manga.dart';
 import '../entities/manga_details.dart';
 
@@ -10,4 +11,7 @@ abstract class MangaRepository {
   Future<MangaDetails> fetchMangaDetails(String id);
   Future<void> toggleFavorite(String id);
   Future<bool> isFavorite(String id);
+  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data'});
+  Future<void> updateReadingProgress(String chapterId, int pageIndex);
+  Future<Chapter?> fetchChapter(String chapterId);
 }

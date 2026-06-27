@@ -91,4 +91,16 @@ class MangaLocalDataSource {
       await _isar.chapterEntitys.put(chapter);
     });
   }
+
+  Future<void> updateChapterProgress(String chapterId, int pageIndex, double percentage) async {
+    await _isar.writeTxn(() async {
+      final existing = await _isar.chapterEntitys.filter().mangaDexIdEqualTo(chapterId).findFirst();
+      if (existing != null) {
+        existing.lastReadPage = pageIndex;
+        existing.readPercentage = percentage;
+        existing.lastReadAt = DateTime.now();
+        await _isar.chapterEntitys.put(existing);
+      }
+    });
+  }
 }

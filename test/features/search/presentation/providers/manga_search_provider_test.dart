@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:manga_reader/features/library/domain/entities/manga.dart';
 import 'package:manga_reader/features/library/domain/entities/manga_details.dart';
+import 'package:manga_reader/features/library/domain/entities/chapter.dart';
 import 'package:manga_reader/features/library/domain/repositories/manga_repository.dart';
 import 'package:manga_reader/features/search/presentation/providers/manga_search_provider.dart';
-import 'package:manga_reader/features/search/presentation/providers/manga_search_state.dart';
 import 'package:fake_async/fake_async.dart';
 
 class MockMangaRepository implements MangaRepository {
@@ -53,6 +53,21 @@ class MockMangaRepository implements MangaRepository {
       return isFavoriteHandler!(id);
     }
     return Future.value(false);
+  }
+
+  @override
+  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data'}) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> updateReadingProgress(String chapterId, int pageIndex) {
+    return Future.value();
+  }
+
+  @override
+  Future<Chapter?> fetchChapter(String chapterId) {
+    throw UnimplementedError();
   }
 }
 

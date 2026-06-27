@@ -1,20 +1,84 @@
-// This is a widget test for the Manga Reader frontend application startup.
-//
-// It validates that the application starts on the login page (initial route)
-// without throwing layout or runtime exceptions, that all components render correctly,
-// and that authentication transition to the home screen (Biblioteca) works correctly.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manga_reader/main.dart';
+import 'package:manga_reader/features/auth/domain/repositories/auth_repository.dart';
+import 'package:manga_reader/features/auth/domain/entities/user.dart';
+import 'package:manga_reader/features/library/domain/repositories/manga_repository.dart';
+import 'package:manga_reader/features/library/domain/entities/manga.dart';
+import 'package:manga_reader/features/library/domain/entities/manga_details.dart';
+
+class MockAuthRepository implements AuthRepository {
+  @override
+  Future<User> login({required String email, required String password}) async {
+    return const User(id: 1, name: 'Test User', email: 'test@example.com');
+  }
+
+  @override
+  Future<User> register({required String name, required String email, required String password}) async {
+    return const User(id: 1, name: 'Test User', email: 'test@example.com');
+  }
+
+  @override
+  Future<void> logout() async {}
+
+  @override
+  Future<String?> getToken() async => null;
+
+  @override
+  Future<void> deleteToken() async {}
+
+  @override
+  Future<User?> getSavedUser() async => null;
+}
+
+class MockMangaRepository implements MangaRepository {
+  @override
+  Future<List<Manga>> fetchFeed({required int limit, required int offset}) async {
+    return const [
+      Manga(id: '1', title: 'Chainsaw Man', coverUrl: 'https://example.com/c1.jpg', isFavorite: false),
+      Manga(id: '2', title: 'One Piece', coverUrl: 'https://example.com/c2.jpg', isFavorite: false),
+      Manga(id: '3', title: 'Jujutsu Kaisen', coverUrl: 'https://example.com/c3.jpg', isFavorite: false),
+    ];
+  }
+
+  @override
+  Future<List<Manga>> searchManga({required String query, required int limit, required int offset}) async {
+    return const [];
+  }
+
+  @override
+  Future<MangaDetails> fetchMangaDetails(String id) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> toggleFavorite(String id) async {}
+
+  @override
+  Future<bool> isFavorite(String id) async => false;
+}
 
 void main() {
   testWidgets('App starts on login screen, handles login, and navigates to biblioteca', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+    tester.view.physicalSize = const Size(1200, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    final mockAuthRepository = MockAuthRepository();
+    final mockMangaRepository = MockMangaRepository();
+
+    // Build our app and trigger a frame with the mock overrides.
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MyApp(),
+      ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(mockAuthRepository),
+          mangaRepositoryProvider.overrideWithValue(mockMangaRepository),
+        ],
+        child: const MyApp(),
       ),
     );
 
@@ -26,16 +90,22 @@ void main() {
     expect(find.widgetWithText(ElevatedButton, 'Entrar'), findsOneWidget);
     expect(find.text('E-mail'), findsOneWidget);
     expect(find.text('Senha'), findsOneWidget);
-    expect(find.text('Não tem uma conta? Cadastre-se'), findsOneWidget);
+    expect(find.text('Não tem uma conta?'), findsOneWidget);
+    expect(find.text('Cadastre-se'), findsOneWidget);
+
+    // Enter login credentials to pass form validation
+    await tester.enterText(find.byType(TextFormField).at(0), 'test@example.com');
+    await tester.enterText(find.byType(TextFormField).at(1), 'password123');
+    await tester.pumpAndSettle();
 
     // Tap the 'Entrar' (Login) button to trigger navigation to home ('/')
     await tester.tap(find.widgetWithText(ElevatedButton, 'Entrar'));
 
     // Wait for the transition animations and router configuration to complete
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     // Verify that we successfully navigated to the library screen (Biblioteca)
-    // The library screen has AppBar and BottomNavigationBar both containing 'Biblioteca'
     expect(find.text('Biblioteca'), findsAtLeastNWidgets(1));
 
     // Verify other navigation bar items are rendered

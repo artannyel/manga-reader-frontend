@@ -225,6 +225,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
+                  minimumSize: const Size(0, 40),
                 ),
                 onPressed: () {
                   ref.read(chapterReaderProvider(widget.chapterId).notifier).loadPages();
@@ -305,6 +306,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
+                    minimumSize: const Size(0, 40),
                   ),
                   onPressed: () {
                     ref.read(chapterReaderProvider(widget.chapterId).notifier).loadPages();
@@ -457,6 +459,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        minimumSize: const Size(0, 40),
                       ),
                       onPressed: () {
                         notifier.toggleLayoutMode();

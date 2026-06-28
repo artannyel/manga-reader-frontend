@@ -54,6 +54,15 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
     const InitializationSettings initializationSettings =
         InitializationSettings(android: initializationSettingsAndroid);
     await _notificationsPlugin.initialize(settings: initializationSettings);
+
+    // Request permission for Android 13+ (API 33+)
+    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+        _notificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    if (androidImplementation != null) {
+      await androidImplementation.requestNotificationsPermission();
+    }
+
     _isInitialized = true;
   }
 

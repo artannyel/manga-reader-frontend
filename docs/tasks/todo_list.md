@@ -4,9 +4,6 @@ This checklist tracks the implementation of features for the Manga Reader Flutte
 
 ---
 
-## [ ] Phase 1: Core Setup, Routing & Theme
-*   [ ] **1.1 Project Dependencies**
-    *   [ ] Add `flutter_riverpod` and state management packages to `pubspec.yaml`.
 ## [x] Phase 1: Core Setup, Routing & Theme
 *   [x] **Dependencies Setup**
     *   [x] Add packages in `pubspec.yaml`
@@ -21,6 +18,12 @@ This checklist tracks the implementation of features for the Manga Reader Flutte
     *   [x] Implement GoRouter in `app_router.dart` exposing a Provider
     *   [x] Configure `StatefulShellRoute` navigation shell
     *   [x] Connect router configuration in `lib/main.dart`
+*   [x] **Environment Configurations & Android Flavors**
+    *   [x] Add `config/` entry to `.gitignore` to prevent configuration leakage.
+    *   [x] Create `config/dev.json`, `config/prod.json`, and `config/dev.json.example` configuration files.
+    *   [x] Set up Android product flavors in `android/app/build.gradle.kts` (dimension "default", flavors `dev` and `prod`, suffixes, and resValues).
+    *   [x] Bind application name via `@string/app_name` resource inside `android/app/src/main/AndroidManifest.xml`.
+    *   [x] Implement compile-time variables check using `String.fromEnvironment` in `ApiConstants` under `lib/core/network/api_constants.dart`.
 *   [x] **Testing & Verification**
     *   [x] Verify compilation success and correct theme loaded
     *   [x] Implement and run startup widget tests
@@ -82,23 +85,23 @@ This checklist tracks the implementation of features for the Manga Reader Flutte
 
 ---
 
-## [ ] Phase 5: Local Downloads & Offline Mode
-*   [ ] **5.1 Connection Monitoring**
-    *   [ ] Wire `connectivity_plus` listener updating the reactive Riverpod state.
-    *   [ ] Build network warning status panels.
-    *   [ ] Implement Router offline guards automatically blocking remote screens when offline.
-*   [ ] **5.2 Safe Directory Bypass**
-    *   [ ] Set up downloads folder inside application internal support directory.
-    *   [ ] Verify the file creation of `.nomedia` file to avoid gallery indexing.
-*   [ ] **5.3 Sequential Download manager**
-    *   [ ] Implement background thread sequential download queue logic.
-    *   [ ] Fetch and download chapter image files sequentially via Dio.
-    *   [ ] Update Isar properties with local disk file strings.
-*   [ ] **5.4 Notification alerts**
-    *   [ ] Configure `flutter_local_notifications` download status channel.
-    *   [ ] Push progress notifications updating values as pages download.
-    *   [ ] Show completion or failure banners when download completes.
-*   [ ] **5.5 Offline Screen**
-    *   [ ] Create `/offline` fallback page.
-    *   [ ] Add "Try Again" network check triggers.
-    *   [ ] Add redirect navigate to `/downloads` option.
+## [x] Phase 5: Local Downloads & Offline Mode
+*   [x] **Connection Monitoring**
+    *   [x] Wire `connectivity_plus` listener updating the reactive Riverpod state.
+    *   [x] Build network warning status panels.
+    *   [x] Implement Router offline guards automatically blocking remote screens when offline.
+*   [x] **Safe Directory Bypass**
+    *   [x] Set up downloads folder inside application internal support directory.
+    *   [x] Verify the file creation of `.nomedia` file to avoid gallery indexing.
+*   [x] **Sequential Download manager**
+    *   [x] Implement background thread sequential download queue logic.
+    *   [x] Fetch and download chapter image files sequentially via Dio.
+    *   [x] Update Isar properties with local disk file strings.
+*   [x] **Notification alerts**
+    *   [x] Configure `flutter_local_notifications` download status channel.
+    *   [x] Push progress notifications updating values as pages download.
+    *   [x] Show completion or failure banners when download completes.
+*   [x] **Offline Screen**
+    *   [x] Create `/offline` fallback page.
+    *   [x] Add "Tentar novamente" network check triggers.
+    *   [x] Add redirect navigate to `/downloads` option.

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -316,6 +317,36 @@ void main() {
         // updateReadingProgress should not have been called
         expect(updateProgressCallCount, 0);
       });
+    });
+
+    test('handles DioException and extracts backend message', () async {
+      mockRepository.fetchChapterHandler = (chapterId) => Future.value(null);
+      
+      final dioException = DioException(
+        requestOptions: RequestOptions(path: ''),
+        response: Response(
+          requestOptions: RequestOptions(path: ''),
+          statusCode: 500,
+          data: {'message': 'Custom Backend Error Message'},
+        ),
+      );
+      mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data'}) {
+        return Future.error(dioException);
+      };
+
+      final container = ProviderContainer(
+        overrides: [
+          mangaRepositoryProvider.overrideWithValue(mockRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(chapterReaderProvider('chapter_1'));
+      await pumpEventQueue();
+
+      final state = container.read(chapterReaderProvider('chapter_1'));
+      expect(state.isLoading, false);
+      expect(state.errorMessage, equals('Custom Backend Error Message'));
     });
   });
 }

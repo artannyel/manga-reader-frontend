@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manga_reader/features/library/domain/repositories/manga_repository.dart';
 import 'chapter_reader_state.dart';
@@ -33,9 +34,19 @@ class ChapterReaderNotifier extends StateNotifier<ChapterReaderState> {
         title: title,
       );
     } catch (e) {
+      String errorMsg = "Falha ao carregar as páginas do capítulo: $e";
+      if (e is DioException) {
+        final responseData = e.response?.data;
+        if (responseData is Map && responseData.containsKey('message')) {
+          final msg = responseData['message'];
+          if (msg is String) {
+            errorMsg = msg;
+          }
+        }
+      }
       state = state.copyWith(
         isLoading: false,
-        errorMessage: "Falha ao carregar as páginas do capítulo: $e",
+        errorMessage: errorMsg,
       );
     }
   }

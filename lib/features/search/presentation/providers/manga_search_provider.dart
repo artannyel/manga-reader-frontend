@@ -11,17 +11,18 @@ final mangaSearchProvider = StateNotifierProvider<MangaSearchNotifier, MangaSear
 class MangaSearchNotifier extends StateNotifier<MangaSearchState> {
   final MangaRepository _repository;
   Timer? _debounceTimer;
+  static const int _limit = 20;
 
   MangaSearchNotifier(this._repository) : super(MangaSearchState.initial());
 
   void onQueryChanged(String query) {
     if (query == state.query) return;
 
-    state = state.copyWith(query: query);
+    state = state.copyWith(query: query, hasReachedMax: false, isLoading: true);
 
     _debounceTimer?.cancel();
     if (query.trim().isEmpty) {
-      state = state.copyWith(mangas: [], isLoading: false, errorMessage: null);
+      state = state.copyWith(mangas: [], isLoading: false, hasReachedMax: false, errorMessage: null);
       return;
     }
 
@@ -33,14 +34,46 @@ class MangaSearchNotifier extends StateNotifier<MangaSearchState> {
   Future<void> _executeSearch(String query) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final results = await _repository.searchManga(query: query, limit: 20, offset: 0);
+      final results = await _repository.searchManga(query: query, limit: _limit, offset: 0);
       if (state.query == query) {
-        state = state.copyWith(isLoading: false, mangas: results);
+        state = state.copyWith(
+          isLoading: false,
+          mangas: results,
+          hasReachedMax: results.length < _limit,
+        );
       }
     } catch (e) {
       if (state.query == query) {
         state = state.copyWith(
           isLoading: false,
+          errorMessage: "Erro ao buscar mangás: $e",
+        );
+      }
+    }
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoading || state.isLoadMore || state.hasReachedMax) return;
+
+    final query = state.query;
+    state = state.copyWith(isLoadMore: true, errorMessage: null);
+    try {
+      final results = await _repository.searchManga(
+        query: query,
+        limit: _limit,
+        offset: state.mangas.length,
+      );
+      if (state.query == query) {
+        state = state.copyWith(
+          isLoadMore: false,
+          mangas: [...state.mangas, ...results],
+          hasReachedMax: results.length < _limit,
+        );
+      }
+    } catch (e) {
+      if (state.query == query) {
+        state = state.copyWith(
+          isLoadMore: false,
           errorMessage: "Erro ao buscar mangás: $e",
         );
       }

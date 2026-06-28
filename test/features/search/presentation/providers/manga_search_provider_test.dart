@@ -100,6 +100,8 @@ void main() {
       expect(state.query, '');
       expect(state.mangas, isEmpty);
       expect(state.isLoading, false);
+      expect(state.isLoadMore, false);
+      expect(state.hasReachedMax, false);
       expect(state.errorMessage, isNull);
     });
 
@@ -231,6 +233,7 @@ void main() {
         final state = container.read(mangaSearchProvider);
         expect(state.isLoading, false);
         expect(state.mangas, results);
+        expect(state.hasReachedMax, true);
         expect(state.errorMessage, isNull);
       });
     });
@@ -258,6 +261,91 @@ void main() {
         expect(state.isLoading, false);
         expect(state.mangas, isEmpty);
         expect(state.errorMessage, contains('Erro ao buscar mangás: API Error'));
+      });
+    });
+
+    test('loadMore successfully appends results and updates hasReachedMax', () {
+      fakeAsync((async) {
+        final firstPage = List.generate(20, (i) => _createManga(i));
+        final secondPage = List.generate(5, (i) => _createManga(20 + i));
+
+        int searchCallCount = 0;
+        mockRepository.searchMangaHandler = ({required query, required limit, required offset}) {
+          searchCallCount++;
+          if (offset == 0) {
+            return Future.value(firstPage);
+          } else {
+            return Future.value(secondPage);
+          }
+        };
+
+        final container = ProviderContainer(
+          overrides: [
+            mangaRepositoryProvider.overrideWithValue(mockRepository),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(mangaSearchProvider.notifier);
+        
+        // 1. Initial search
+        notifier.onQueryChanged('Bleach');
+        async.elapse(const Duration(milliseconds: 550));
+        async.flushMicrotasks();
+
+        var state = container.read(mangaSearchProvider);
+        expect(state.mangas.length, 20);
+        expect(state.hasReachedMax, false);
+
+        // 2. Load more
+        notifier.loadMore();
+        
+        state = container.read(mangaSearchProvider);
+        expect(state.isLoadMore, true);
+
+        async.flushMicrotasks();
+        
+        state = container.read(mangaSearchProvider);
+        expect(state.isLoadMore, false);
+        expect(state.mangas.length, 25);
+        expect(state.mangas.sublist(0, 20), firstPage);
+        expect(state.mangas.sublist(20), secondPage);
+        expect(state.hasReachedMax, true);
+        expect(searchCallCount, 2);
+      });
+    });
+
+    test('loadMore does not execute if isLoading, isLoadMore, or hasReachedMax is true', () {
+      fakeAsync((async) {
+        int searchCallCount = 0;
+        mockRepository.searchMangaHandler = ({required query, required limit, required offset}) {
+          searchCallCount++;
+          return Future.value([]);
+        };
+
+        final container = ProviderContainer(
+          overrides: [
+            mangaRepositoryProvider.overrideWithValue(mockRepository),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(mangaSearchProvider.notifier);
+
+        // Case 1: isLoading is true (still waiting for initial search)
+        notifier.onQueryChanged('Bleach');
+        notifier.loadMore();
+        expect(searchCallCount, 0);
+
+        // Complete the initial search (hasReachedMax will become true since results = [])
+        async.elapse(const Duration(milliseconds: 550));
+        async.flushMicrotasks();
+        expect(searchCallCount, 1);
+        expect(container.read(mangaSearchProvider).hasReachedMax, true);
+
+        // Case 2: hasReachedMax is true
+        notifier.loadMore();
+        expect(searchCallCount, 1);
       });
     });
   });

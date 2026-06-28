@@ -13,10 +13,23 @@ class SearchScreen extends ConsumerStatefulWidget {
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent) {
+        ref.read(mangaSearchProvider.notifier).loadMore();
+      }
+    });
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -119,138 +132,150 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                     ],
                                   ),
                                 )
-                              : GridView.builder(
-                                  padding: const EdgeInsets.only(bottom: 16),
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 16,
-                                    mainAxisSpacing: 16,
-                                    childAspectRatio: 0.65,
-                                  ),
-                                  itemCount: searchState.mangas.length,
-                                  itemBuilder: (context, index) {
-                                    final manga = searchState.mangas[index];
-                                    return GestureDetector(
-                                      onTap: () {
-                                        context.push('/manga/${manga.id}');
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          color: Colors.grey.shade900,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color:
-                                                  Colors.black.withOpacity(0.3),
-                                              blurRadius: 6,
-                                              offset: const Offset(0, 4),
-                                            ),
-                                          ],
+                              : Column(
+                                  children: [
+                                    Expanded(
+                                      child: GridView.builder(
+                                        controller: _scrollController,
+                                        padding: const EdgeInsets.only(bottom: 16),
+                                        gridDelegate:
+                                            const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 2,
+                                          crossAxisSpacing: 16,
+                                          mainAxisSpacing: 16,
+                                          childAspectRatio: 0.65,
                                         ),
-                                        clipBehavior: Clip.antiAlias,
-                                        child: Stack(
-                                          fit: StackFit.expand,
-                                          children: [
-                                            CachedNetworkImage(
-                                              imageUrl: manga.coverUrl,
-                                              fit: BoxFit.cover,
-                                              placeholder: (context, url) =>
-                                                  Container(
-                                                color: Colors.grey.shade800,
-                                                child: const Center(
-                                                  child: SizedBox(
-                                                    width: 30,
-                                                    height: 30,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      color: Colors.red,
-                                                    ),
+                                        itemCount: searchState.mangas.length,
+                                        itemBuilder: (context, index) {
+                                          final manga = searchState.mangas[index];
+                                          return GestureDetector(
+                                            onTap: () {
+                                              context.push('/manga/${manga.id}');
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                color: Colors.grey.shade900,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color:
+                                                        Colors.black.withOpacity(0.3),
+                                                    blurRadius: 6,
+                                                    offset: const Offset(0, 4),
                                                   ),
-                                                ),
+                                                ],
                                               ),
-                                              errorWidget: (context, url,
-                                                      error) =>
-                                                  Container(
-                                                color: Colors.grey.shade800,
-                                                child: const Icon(
-                                                  Icons.book,
-                                                  size: 50,
-                                                  color: Colors.white24,
-                                                ),
-                                              ),
-                                            ),
-                                            Positioned.fill(
-                                              child: DecoratedBox(
-                                                decoration: BoxDecoration(
-                                                  gradient: LinearGradient(
-                                                    begin: Alignment.topCenter,
-                                                    end: Alignment.bottomCenter,
-                                                    colors: [
-                                                      Colors.transparent,
-                                                      Colors.black
-                                                          .withOpacity(0.1),
-                                                      Colors.black
-                                                          .withOpacity(0.7),
-                                                      Colors.black
-                                                          .withOpacity(0.95),
-                                                    ],
-                                                    stops: const [
-                                                      0.0,
-                                                      0.4,
-                                                      0.75,
-                                                      1.0
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Positioned(
-                                              bottom: 12,
-                                              left: 12,
-                                              right: 12,
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
+                                              clipBehavior: Clip.antiAlias,
+                                              child: Stack(
+                                                fit: StackFit.expand,
                                                 children: [
-                                                  Text(
-                                                    manga.title,
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 14,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  if (manga.author != null &&
-                                                      manga.author!
-                                                          .isNotEmpty) ...[
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      manga.author!,
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        color: Colors
-                                                            .grey.shade400,
+                                                  CachedNetworkImage(
+                                                    imageUrl: manga.coverUrl,
+                                                    fit: BoxFit.cover,
+                                                    placeholder: (context, url) =>
+                                                        Container(
+                                                      color: Colors.grey.shade800,
+                                                      child: const Center(
+                                                        child: SizedBox(
+                                                          width: 30,
+                                                          height: 30,
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                            strokeWidth: 2,
+                                                            color: Colors.red,
+                                                          ),
+                                                        ),
                                                       ),
                                                     ),
-                                                  ],
+                                                    errorWidget: (context, url,
+                                                            error) =>
+                                                        Container(
+                                                      color: Colors.grey.shade800,
+                                                      child: const Icon(
+                                                        Icons.book,
+                                                        size: 50,
+                                                        color: Colors.white24,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Positioned.fill(
+                                                    child: DecoratedBox(
+                                                      decoration: BoxDecoration(
+                                                        gradient: LinearGradient(
+                                                          begin: Alignment.topCenter,
+                                                          end: Alignment.bottomCenter,
+                                                          colors: [
+                                                            Colors.transparent,
+                                                            Colors.black
+                                                                .withOpacity(0.1),
+                                                            Colors.black
+                                                                .withOpacity(0.7),
+                                                            Colors.black
+                                                                .withOpacity(0.95),
+                                                          ],
+                                                          stops: const [
+                                                            0.0,
+                                                            0.4,
+                                                            0.75,
+                                                            1.0
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Positioned(
+                                                    bottom: 12,
+                                                    left: 12,
+                                                    right: 12,
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment.start,
+                                                      children: [
+                                                        Text(
+                                                          manga.title,
+                                                          maxLines: 2,
+                                                          overflow:
+                                                              TextOverflow.ellipsis,
+                                                          style: const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 14,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                        if (manga.author != null &&
+                                                            manga.author!
+                                                                .isNotEmpty) ...[
+                                                          const SizedBox(height: 4),
+                                                          Text(
+                                                            manga.author!,
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow.ellipsis,
+                                                            style: TextStyle(
+                                                              fontSize: 12,
+                                                              color: Colors
+                                                                  .grey.shade400,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ],
+                                                    ),
+                                                  ),
                                                 ],
                                               ),
                                             ),
-                                          ],
-                                        ),
+                                          );
+                                        },
                                       ),
-                                    );
-                                  },
+                                    ),
+                                    if (searchState.isLoadMore)
+                                      const Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 16),
+                                        child: Center(child: CircularProgressIndicator(color: Colors.red)),
+                                      ),
+                                  ],
                                 ),
             ),
           ],

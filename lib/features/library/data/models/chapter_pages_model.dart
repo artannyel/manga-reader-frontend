@@ -1,3 +1,5 @@
+import 'package:manga_reader/core/network/api_constants.dart';
+
 class ChapterPagesModel {
   final String chapterId;
   final String quality;
@@ -26,12 +28,12 @@ class ChapterPagesModel {
     String hostUrl = json['host'] as String? ?? 
                      json['host_url'] as String? ?? 
                      json['hostUrl'] as String? ?? 
-                     'https://uploads.mangadex.org';
+                     ApiConstants.uploadsUrl;
 
     // Verify if the host URL returned by the backend is absolute
     final hostUri = Uri.tryParse(hostUrl);
     if (hostUri == null || !hostUri.isAbsolute) {
-      hostUrl = 'https://uploads.mangadex.org';
+      hostUrl = ApiConstants.uploadsUrl;
     } else {
       hostUrl = hostUrl.endsWith('/') ? hostUrl.substring(0, hostUrl.length - 1) : hostUrl;
     }

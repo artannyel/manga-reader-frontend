@@ -225,3 +225,22 @@ Downloading mangas is a key feature. We bypass MangaDex limits by downloading fi
 *   **Security & Protection**:
     *   Store all assets in the application's internal data directory (never in public/external storage directories like Gallery or Pictures).
     *   Write a blank `.nomedia` file immediately inside the root `/downloads/` directory when creating it. This instructs Android/iOS system scanners to skip indexing these directories, preventing manga pages from appearing in the user's gallery app.
+
+---
+
+## 6. Environment Configurations (Dev vs. Prod)
+
+The application supports multiple environments to isolate development/testing settings from production endpoints.
+
+### 6.1 Configuration Files
+Environment-specific variables are defined in external JSON files located inside the `config/` directory. These files are excluded from version control to protect credentials and backend URLs.
+*   **Development Configuration (`config/dev.json`)**: Contains configuration properties for local development, emulator, or staging environments.
+*   **Production Configuration (`config/prod.json`)**: Contains configuration properties targeting the production backend service.
+
+### 6.2 Environment Keys
+Both files must define the same structure and keys:
+*   `API_URL`: The base URL pointing to the Laravel backend API (e.g., `http://10.0.2.2:8000/api` for Android Emulator development, or the production URL).
+*   `MANGADEX_UPLOADS_URL`: The domain used to construct manga page image URLs (e.g., `https://uploads.mangadex.org`).
+
+These configurations are injected into the build using `--dart-define-from-file` and resolved dynamically in Dart via `String.fromEnvironment`.
+

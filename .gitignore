@@ -47,4 +47,6 @@ app.*.map.json
 
 config/*
 !config/dev.json.example
-
+# Local compiled native libraries (Isar test run)
+*.so
+libisar.so

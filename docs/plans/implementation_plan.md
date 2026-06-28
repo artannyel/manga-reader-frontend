@@ -25,11 +25,20 @@ Set up the base architecture, state management framework, routing engine, and UI
 4.  **Router Configuration**:
     *   Initialize GoRouter in `lib/core/router/app_router.dart`.
     *   Configure path strings and map placeholders for Login, Home, Search, Details, Reader, Downloads, and Offline pages.
+5.  **Environment Configurations & Android Flavors**:
+    *   Add `config/` entry to `.gitignore` to prevent any environments/configs from being checked into git.
+    *   Create development configurations at `config/dev.json` and production configurations at `config/prod.json` (also create `config/dev.json.example` as a template reference).
+    *   Define product flavors inside `android/app/build.gradle` (using dimension "default", dev and prod flavors, applicationId suffixes, and resValues for app names).
+    *   Update `android/app/src/main/AndroidManifest.xml` to set `android:label="@string/app_name"`.
+    *   Create `ApiConstants` in `lib/core/network/api_constants.dart` parsing configuration attributes via `String.fromEnvironment`.
 
 ### 1.2 Verification
 *   Compile the project successfully.
 *   Toggle system dark/light modes and ensure the default theme displays red highlights correctly.
 *   Navigate between placeholder screens using GoRouter paths to confirm routing paths work.
+*   Run `git status` to verify that files inside the `config/` directory are ignored by Git.
+*   Run `flutter run --flavor dev --dart-define-from-file=config/dev.json` to verify the development build works, uses the suffix, and displays "Manga Reader Dev" as the application title.
+*   Run `flutter run --flavor prod --dart-define-from-file=config/prod.json` to verify the production environment runs with "Manga Reader".
 
 ---
 

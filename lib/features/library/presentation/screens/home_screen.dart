@@ -5,6 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/manga_feed_provider.dart';
 
+import '../../../../core/services/connectivity_service.dart';
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -38,6 +40,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final feedState = ref.watch(mangaFeedProvider);
+    final connectivity = ref.watch(connectivityProvider);
+    final isOffline = connectivity == ConnectivityStatus.offline;
 
     return Scaffold(
       appBar: AppBar(
@@ -112,6 +116,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       )
                     : Column(
                         children: [
+                          if (isOffline)
+                            Container(
+                              width: double.infinity,
+                              color: Colors.red.shade900,
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                              child: const Text(
+                                'Você está offline. Mostrando apenas conteúdo baixado.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                            ),
                           Expanded(
                             child: GridView.builder(
                               controller: _scrollController,

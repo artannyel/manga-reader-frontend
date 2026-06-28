@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 enum ConnectivityStatus { online, offline }
 
 class ConnectivityNotifier extends StateNotifier<ConnectivityStatus> {
-  final Connectivity _connectivity = Connectivity();
+  final Connectivity _connectivity;
 
-  ConnectivityNotifier() : super(ConnectivityStatus.online) {
+  ConnectivityNotifier({Connectivity? connectivity})
+      : _connectivity = connectivity ?? Connectivity(),
+        super(ConnectivityStatus.online) {
     _init();
   }
 

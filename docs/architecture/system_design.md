@@ -264,8 +264,76 @@ We use `flutter_local_notifications` to provide native feedback when chapter dow
       │
 [All Pages Downloaded?]
   /                \
- No                Yes
- /                  \
+ Leave                Yes
+  /                  \
 [Next Page]      [Update Notification: "Capítulo X: Download concluído" ("Chapter X Download Completed")]
                  [Auto-cancel after 3 seconds or keep persistent]
+```
+
+---
+
+## 6. Build Configurations & Product Flavors (Android)
+
+To manage separate environments on Android, the project utilizes Gradle Product Flavors combined with Flutter's compiler-level definitions.
+
+### 6.1 Gradle Product Flavors (`android/app/build.gradle`)
+The application defines a single flavor dimension `"default"` containing two distinct flavors (`dev` and `prod`). Each flavor is customized with separate package IDs (application ID suffix) and application names to allow installing both versions side-by-side on the same device.
+
+```groovy
+android {
+    ...
+    flavorDimensions "default"
+
+    productFlavors {
+        dev {
+            dimension "default"
+            applicationIdSuffix ".dev"
+            resValue "string", "app_name", "Manga Reader Dev"
+        }
+        prod {
+            dimension "default"
+            // Production maps to the base applicationId (e.g., com.example.manga_reader)
+            resValue "string", "app_name", "Manga Reader"
+        }
+    }
+}
+```
+
+#### Android Manifest Integration
+To dynamically resolve the app name according to the active build flavor, `android/app/src/main/AndroidManifest.xml` must map its label attribute to the generated resource value:
+```xml
+<application
+    android:label="@string/app_name"
+    ... >
+```
+
+### 6.2 Flutter `--dart-define-from-file` Compilation Setup
+During compilation, Flutter reads custom configurations from JSON files and injects them as global environment variables.
+
+#### CLI Execution Commands
+*   **Run/Build Development Mode**:
+    ```bash
+    flutter run --flavor dev --dart-define-from-file=config/dev.json
+    flutter build apk --flavor dev --dart-define-from-file=config/dev.json
+    ```
+*   **Run/Build Production Mode**:
+    ```bash
+    flutter run --flavor prod --dart-define-from-file=config/prod.json
+    flutter build apk --flavor prod --dart-define-from-file=config/prod.json
+    ```
+
+#### Dart Configuration Mapping (`ApiConstants`)
+A dedicated configuration class reads these variables from the environment at compile-time:
+```dart
+class ApiConstants {
+  static const String backendUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'http://10.0.2.2:8000/api', // Fallback for dev emulator
+  );
+
+  static const String mangadexUploadsUrl = String.fromEnvironment(
+    'MANGADEX_UPLOADS_URL',
+    defaultValue: 'https://uploads.mangadex.org',
+  );
+}
 ```

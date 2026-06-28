@@ -15,24 +15,44 @@ subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
-subprojects {
-    project.evaluationDependsOn(":app")
-}
 
 subprojects {
-    val configureNamespace = {
+    val configureNamespaceAndSdk = {
         val android = extensions.findByName("android") as? com.android.build.gradle.BaseExtension
-        if (android != null && android.namespace == null) {
-            android.namespace = "com.example.${project.name.replace("-", "_").replace(".", "_")}"
+        if (android != null) {
+            if (android.namespace == null) {
+                android.namespace = "com.example.${project.name.replace("-", "_").replace(".", "_")}"
+            }
+            android.compileSdkVersion(36)
         }
     }
     if (project.state.executed) {
-        configureNamespace()
+        configureNamespaceAndSdk()
     } else {
         project.afterEvaluate {
-            configureNamespace()
+            configureNamespaceAndSdk()
         }
     }
+
+    // Task to remove the package attribute from AndroidManifest.xml for plugins
+    tasks.whenTaskAdded {
+        if (name.contains("processDebugManifest") || name.contains("processReleaseManifest")) {
+            doFirst {
+                val manifestFile = file("${projectDir}/src/main/AndroidManifest.xml")
+                if (manifestFile.exists()) {
+                    var content = manifestFile.readText(Charsets.UTF_8)
+                    if (content.contains("package=")) {
+                        content = content.replace(Regex("""package="[^"]+""""), "")
+                        manifestFile.writeText(content, Charsets.UTF_8)
+                    }
+                }
+            }
+        }
+    }
+}
+
+subprojects {
+    project.evaluationDependsOn(":app")
 }
 
 tasks.register<Delete>("clean") {

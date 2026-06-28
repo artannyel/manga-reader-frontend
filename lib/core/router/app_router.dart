@@ -54,17 +54,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         if (location == '/downloads' || location == '/offline') {
           return null;
         }
-        if (location == '/manga/:id/chapter/:chapterId') {
-          final chapterId = state.pathParameters['chapterId'];
-          if (chapterId != null) {
-            final isarService = ref.read(isarServiceProvider);
-            final chapter = await isarService.isar.chapterEntitys
-                .filter()
-                .mangaDexIdEqualTo(chapterId)
-                .findFirst();
-            if (chapter != null && chapter.downloadStatus == DownloadStatus.downloaded) {
-              return null;
-            }
+        final uri = state.uri;
+        if (uri.pathSegments.length == 4 &&
+            uri.pathSegments[0] == 'manga' &&
+            uri.pathSegments[2] == 'chapter') {
+          final chapterId = uri.pathSegments[3];
+          final isarService = ref.read(isarServiceProvider);
+          final chapter = await isarService.isar.chapterEntitys
+              .filter()
+              .mangaDexIdEqualTo(chapterId)
+              .findFirst();
+          if (chapter != null && chapter.downloadStatus == DownloadStatus.downloaded) {
+            return null;
           }
         }
         return '/offline';

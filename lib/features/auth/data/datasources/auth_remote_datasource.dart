@@ -18,6 +18,7 @@ abstract class AuthRemoteDataSource {
     required String name,
     required String email,
     required String password,
+    required String passwordConfirmation,
   });
 
   Future<void> logout();
@@ -48,6 +49,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String name,
     required String email,
     required String password,
+    required String passwordConfirmation,
   }) async {
     final response = await _dio.post(
       '/register',
@@ -55,6 +57,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'name': name,
         'email': email,
         'password': password,
+        'password_confirmation': passwordConfirmation,
       },
     );
     return AuthResponse.fromJson(response.data as Map<String, dynamic>);

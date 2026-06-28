@@ -16,7 +16,7 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<User> register({required String name, required String email, required String password}) async {
+  Future<User> register({required String name, required String email, required String password, required String passwordConfirmation}) async {
     return const User(id: 1, name: 'Test User', email: 'test@example.com');
   }
 

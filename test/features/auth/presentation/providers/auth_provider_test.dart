@@ -8,7 +8,7 @@ import 'package:manga_reader/features/auth/presentation/providers/auth_state.dar
 
 class MockAuthRepository implements AuthRepository {
   Future<User> Function({required String email, required String password})? loginHandler;
-  Future<User> Function({required String name, required String email, required String password})? registerHandler;
+  Future<User> Function({required String name, required String email, required String password, required String passwordConfirmation})? registerHandler;
   Future<void> Function()? logoutHandler;
   Future<String?> Function()? getTokenHandler;
   Future<void> Function()? deleteTokenHandler;
@@ -23,9 +23,9 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<User> register({required String name, required String email, required String password}) {
+  Future<User> register({required String name, required String email, required String password, required String passwordConfirmation}) {
     if (registerHandler != null) {
-      return registerHandler!(name: name, email: email, password: password);
+      return registerHandler!(name: name, email: email, password: password, passwordConfirmation: passwordConfirmation);
     }
     throw UnimplementedError('registerHandler not set');
   }
@@ -204,7 +204,7 @@ void main() {
       const testUser = User(id: 2, name: 'New User', email: 'new@example.com');
       mockAuthRepository.getSavedUserHandler = () => Future.value(null);
       mockAuthRepository.getTokenHandler = () => Future.value(null);
-      mockAuthRepository.registerHandler = ({required name, required email, required password}) => Future.value(testUser);
+      mockAuthRepository.registerHandler = ({required name, required email, required password, required passwordConfirmation}) => Future.value(testUser);
 
       final container = ProviderContainer(
         overrides: [
@@ -225,7 +225,7 @@ void main() {
       );
 
       final notifier = container.read(authProvider.notifier);
-      await notifier.register(name: 'New User', email: 'new@example.com', password: 'password');
+      await notifier.register(name: 'New User', email: 'new@example.com', password: 'password', passwordConfirmation: 'password');
 
       expect(states.length, 2);
       expect(states[0], isA<AuthLoading>());

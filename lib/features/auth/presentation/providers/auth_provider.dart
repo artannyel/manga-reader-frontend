@@ -70,10 +70,16 @@ class AuthNotifier extends Notifier<AuthState> {
     required String name,
     required String email,
     required String password,
+    required String passwordConfirmation,
   }) async {
     state = const AuthLoading();
     try {
-      final user = await _registerUseCase(name: name, email: email, password: password);
+      final user = await _registerUseCase(
+        name: name,
+        email: email,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
+      );
       state = AuthAuthenticated(user);
     } catch (e) {
       state = AuthError(_mapErrorToMessage(e));

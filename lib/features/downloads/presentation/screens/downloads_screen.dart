@@ -7,6 +7,7 @@ import '../../../../core/services/isar_service.dart';
 import '../../../library/data/models/chapter_entity.dart';
 import '../../../library/data/models/manga_entity.dart';
 import '../../../library/domain/entities/chapter.dart';
+import '../../../../core/services/download_service.dart';
 
 class DownloadsScreen extends ConsumerStatefulWidget {
   const DownloadsScreen({super.key});
@@ -143,7 +144,44 @@ class _DownloadsScreenState extends ConsumerState<DownloadsScreen> {
                                 chapter.title.isEmpty ? 'Sem título' : chapter.title,
                                 style: const TextStyle(color: Colors.grey, fontSize: 13),
                               ),
-                              trailing: const Icon(Icons.chrome_reader_mode, color: Colors.red),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext dialogContext) {
+                                          return AlertDialog(
+                                            title: const Text('Excluir Capítulo'),
+                                            content: Text('Deseja excluir o download do Capítulo ${chapter.chapterNumber}?'),
+                                            actions: [
+                                              TextButton(
+                                                child: const Text('Cancelar'),
+                                                onPressed: () => Navigator.of(dialogContext).pop(),
+                                              ),
+                                              TextButton(
+                                                child: const Text(
+                                                  'Excluir',
+                                                  style: TextStyle(color: Colors.red),
+                                                ),
+                                                onPressed: () async {
+                                                  Navigator.of(dialogContext).pop();
+                                                  await ref.read(downloadServiceProvider.notifier).deleteDownloadedChapter(chapter.mangaDexId);
+                                                  _loadDownloads();
+                                                },
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Icon(Icons.chrome_reader_mode, color: Colors.red),
+                                ],
+                              ),
                               onTap: () {
                                 context.push('/manga/${manga.mangaDexId}/chapter/${chapter.mangaDexId}');
                               },

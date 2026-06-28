@@ -444,7 +444,9 @@ class MangaDetailsScreen extends ConsumerWidget {
                             onTap: () {
                               context.push(
                                 '/manga/$mangaId/chapter/${chapter.id}?language=$selectedLanguage',
-                              );
+                              ).then((_) {
+                                ref.read(mangaDetailsProvider(mangaId).notifier).fetchDetails();
+                              });
                             },
                           ),
                         );

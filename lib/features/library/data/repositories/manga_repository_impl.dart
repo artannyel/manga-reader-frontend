@@ -134,6 +134,12 @@ class MangaRepositoryImpl implements MangaRepository {
         ..lastSyncedAt = DateTime.now();
       await _localDataSource.saveManga(mangaEntity);
 
+      final availableLanguagesList = json['available_languages'] as List<dynamic>? ?? [];
+      final availableLanguages = availableLanguagesList.map((e) => e.toString()).toList();
+
+      final descriptionsMap = json['descriptions'] as Map<dynamic, dynamic>? ?? {};
+      final descriptions = descriptionsMap.map((key, value) => MapEntry(key.toString(), value.toString()));
+
       final chaptersList = json['chapters'] as List<dynamic>;
       final List<Chapter> chapters = [];
       final List<ChapterEntity> chapterEntities = [];
@@ -158,6 +164,7 @@ class MangaRepositoryImpl implements MangaRepository {
           ..mangaId = id
           ..chapterNumber = chapterModel.chapterNumber
           ..title = chapterModel.title
+          ..language = chapterModel.language
           ..pagesCount = chapterModel.pagesCount
           ..downloadStatus = chapterModel.downloadStatus
           ..localPagePaths = chapterModel.localPagePaths
@@ -169,7 +176,12 @@ class MangaRepositoryImpl implements MangaRepository {
 
       await _localDataSource.saveChapters(chapterEntities);
 
-      return MangaDetails(manga: manga, chapters: chapters);
+      return MangaDetails(
+        manga: manga,
+        chapters: chapters,
+        availableLanguages: availableLanguages,
+        descriptions: descriptions,
+      );
     } catch (_) {
       final localManga = await _localDataSource.getManga(id);
       if (localManga == null) {
@@ -190,6 +202,7 @@ class MangaRepositoryImpl implements MangaRepository {
         mangaId: c.mangaId,
         chapterNumber: c.chapterNumber,
         title: c.title,
+        language: c.language,
         pagesCount: c.pagesCount,
         downloadStatus: c.downloadStatus,
         localPagePaths: c.localPagePaths,
@@ -198,7 +211,15 @@ class MangaRepositoryImpl implements MangaRepository {
         lastReadAt: c.lastReadAt,
       )).toList();
 
-      return MangaDetails(manga: manga, chapters: chapters);
+      final availableLanguages = chapters.map((c) => c.language).toSet().toList();
+      final descriptions = localManga.description != null ? {'en': localManga.description!} : <String, String>{};
+
+      return MangaDetails(
+        manga: manga,
+        chapters: chapters,
+        availableLanguages: availableLanguages,
+        descriptions: descriptions,
+      );
     }
   }
 
@@ -213,7 +234,7 @@ class MangaRepositoryImpl implements MangaRepository {
   }
 
   @override
-  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data'}) async {
+  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data', String? language}) async {
     try {
       final localChap = await _localDataSource.getChapter(chapterId);
       if (localChap != null &&
@@ -224,7 +245,7 @@ class MangaRepositoryImpl implements MangaRepository {
       }
     } catch (_) {}
 
-    final json = await _remoteDataSource.fetchChapterPages(chapterId, quality: quality);
+    final json = await _remoteDataSource.fetchChapterPages(chapterId, quality: quality, language: language);
     final model = ChapterPagesModel.fromJson(json, targetQuality: quality);
     return model.pageUrls;
   }
@@ -251,6 +272,7 @@ class MangaRepositoryImpl implements MangaRepository {
       mangaId: entity.mangaId,
       chapterNumber: entity.chapterNumber,
       title: entity.title,
+      language: entity.language,
       pagesCount: entity.pagesCount,
       downloadStatus: entity.downloadStatus,
       localPagePaths: entity.localPagePaths,

@@ -22,7 +22,23 @@ class MangaDetailsNotifier extends StateNotifier<MangaDetailsState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final details = await _repository.fetchMangaDetails(_mangaId);
-      state = state.copyWith(isLoading: false, details: details);
+      String? defaultLang;
+      if (details.availableLanguages.isNotEmpty) {
+        if (details.availableLanguages.contains('pt-br')) {
+          defaultLang = 'pt-br';
+        } else if (details.availableLanguages.contains('pt')) {
+          defaultLang = 'pt';
+        } else if (details.availableLanguages.contains('en')) {
+          defaultLang = 'en';
+        } else {
+          defaultLang = details.availableLanguages.first;
+        }
+      }
+      state = state.copyWith(
+        isLoading: false,
+        details: details,
+        selectedLanguage: defaultLang,
+      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -40,7 +56,12 @@ class MangaDetailsNotifier extends StateNotifier<MangaDetailsState> {
       final isFav = await _repository.isFavorite(_mangaId);
       
       final updatedManga = details.manga.copyWith(isFavorite: isFav);
-      final updatedDetails = MangaDetails(manga: updatedManga, chapters: details.chapters);
+      final updatedDetails = MangaDetails(
+        manga: updatedManga,
+        chapters: details.chapters,
+        availableLanguages: details.availableLanguages,
+        descriptions: details.descriptions,
+      );
       
       state = state.copyWith(details: updatedDetails);
       _ref.invalidate(mangaFeedProvider);
@@ -51,5 +72,9 @@ class MangaDetailsNotifier extends StateNotifier<MangaDetailsState> {
 
   void toggleSortOrder() {
     state = state.copyWith(isSortAscending: !state.isSortAscending);
+  }
+
+  void changeLanguage(String lang) {
+    state = state.copyWith(selectedLanguage: lang);
   }
 }

@@ -41,9 +41,10 @@ class MangaRemoteDataSource {
     return response.data as Map<String, dynamic>;
   }
 
-  Future<Map<String, dynamic>> fetchChapterPages(String chapterId, {String quality = 'data'}) async {
+  Future<Map<String, dynamic>> fetchChapterPages(String chapterId, {String quality = 'data', String? language}) async {
     final response = await _dio.get('/chapters/$chapterId/pages', queryParameters: {
       'quality': quality,
+      if (language != null) 'language': language,
     });
     return response.data as Map<String, dynamic>;
   }

@@ -11,7 +11,7 @@ abstract class MangaRepository {
   Future<MangaDetails> fetchMangaDetails(String id);
   Future<void> toggleFavorite(String id);
   Future<bool> isFavorite(String id);
-  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data'});
+  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data', String? language});
   Future<void> updateReadingProgress(String chapterId, int pageIndex);
   Future<Chapter?> fetchChapter(String chapterId);
 }

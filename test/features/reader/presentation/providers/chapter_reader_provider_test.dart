@@ -12,7 +12,7 @@ import 'package:manga_reader/features/reader/presentation/providers/chapter_read
 
 class MockMangaRepository implements MangaRepository {
   Future<Chapter?> Function(String chapterId)? fetchChapterHandler;
-  Future<List<String>> Function(String chapterId, {String quality})? fetchChapterPagesHandler;
+  Future<List<String>> Function(String chapterId, {String quality, String? language})? fetchChapterPagesHandler;
   Future<void> Function(String chapterId, int pageIndex)? updateReadingProgressHandler;
 
   @override
@@ -39,9 +39,9 @@ class MockMangaRepository implements MangaRepository {
   }
 
   @override
-  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data'}) {
+  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data', String? language}) {
     if (fetchChapterPagesHandler != null) {
-      return fetchChapterPagesHandler!(chapterId, quality: quality);
+      return fetchChapterPagesHandler!(chapterId, quality: quality, language: language);
     }
     return Future.value([]);
   }
@@ -57,6 +57,7 @@ class MockMangaRepository implements MangaRepository {
 
 void main() {
   late MockMangaRepository mockRepository;
+  const param = ChapterReaderParam(chapterId: 'chapter_1');
 
   setUp(() {
     mockRepository = MockMangaRepository();
@@ -70,6 +71,7 @@ void main() {
         mangaId: 'manga_1',
         chapterNumber: '1',
         title: 'Test Chapter Title',
+        language: 'en',
         pagesCount: 3,
         downloadStatus: DownloadStatus.notDownloaded,
         lastReadPage: 1,
@@ -81,7 +83,7 @@ void main() {
         return Future.value(mockChapter);
       };
 
-      mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data'}) {
+      mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data', language}) {
         expect(chapterId, 'chapter_1');
         return Future.value(mockPages);
       };
@@ -94,13 +96,13 @@ void main() {
       addTearDown(container.dispose);
 
       // Trigger lazy instantiation of provider and notifier constructor
-      final stateBeforeLoad = container.read(chapterReaderProvider('chapter_1'));
+      final stateBeforeLoad = container.read(chapterReaderProvider(param));
       expect(stateBeforeLoad.isLoading, true);
 
       // Wait for all async operations to finish
       await pumpEventQueue();
 
-      final stateAfterLoad = container.read(chapterReaderProvider('chapter_1'));
+      final stateAfterLoad = container.read(chapterReaderProvider(param));
       expect(stateAfterLoad.isLoading, false);
       expect(stateAfterLoad.pages, mockPages);
       expect(stateAfterLoad.currentPageIndex, 1); // clamped(0, 2) from lastReadPage
@@ -110,7 +112,7 @@ void main() {
 
     test('handles error gracefully when loading pages fails', () async {
       mockRepository.fetchChapterHandler = (chapterId) => Future.value(null);
-      mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data'}) {
+      mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data', language}) {
         return Future.error('Network Error');
       };
 
@@ -122,12 +124,12 @@ void main() {
       addTearDown(container.dispose);
 
       // Trigger lazy instantiation of provider
-      container.read(chapterReaderProvider('chapter_1'));
+      container.read(chapterReaderProvider(param));
 
       // Wait for loadPages to run and finish
       await pumpEventQueue();
 
-      final state = container.read(chapterReaderProvider('chapter_1'));
+      final state = container.read(chapterReaderProvider(param));
       expect(state.isLoading, false);
       expect(state.pages, isEmpty);
       expect(state.errorMessage, contains('Falha ao carregar as páginas do capítulo: Network Error'));
@@ -137,7 +139,7 @@ void main() {
       fakeAsync((async) {
         final mockPages = ['page1.jpg', 'page2.jpg', 'page3.jpg'];
         mockRepository.fetchChapterHandler = (chapterId) => Future.value(null);
-        mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data'}) => Future.value(mockPages);
+        mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data', language}) => Future.value(mockPages);
 
         int updateProgressCallCount = 0;
         int? lastUpdatedPageIndex;
@@ -154,18 +156,18 @@ void main() {
         );
         addTearDown(container.dispose);
 
-        final notifier = container.read(chapterReaderProvider('chapter_1').notifier);
+        final notifier = container.read(chapterReaderProvider(param).notifier);
         
         // Complete initial load
         async.elapse(const Duration(milliseconds: 10)); 
         
-        expect(container.read(chapterReaderProvider('chapter_1')).currentPageIndex, 0);
+        expect(container.read(chapterReaderProvider(param)).currentPageIndex, 0);
 
         // Change page to 2
         notifier.setPage(2);
 
         // State updates immediately
-        expect(container.read(chapterReaderProvider('chapter_1')).currentPageIndex, 2);
+        expect(container.read(chapterReaderProvider(param)).currentPageIndex, 2);
         expect(updateProgressCallCount, 0); // Not called yet (debounced by 1500ms)
 
         // Advance 1.0 second (less than 1.5s)
@@ -183,7 +185,7 @@ void main() {
       fakeAsync((async) {
         final mockPages = ['page1.jpg', 'page2.jpg', 'page3.jpg'];
         mockRepository.fetchChapterHandler = (chapterId) => Future.value(null);
-        mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data'}) => Future.value(mockPages);
+        mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data', language}) => Future.value(mockPages);
 
         int updateProgressCallCount = 0;
         int? lastUpdatedPageIndex;
@@ -200,7 +202,7 @@ void main() {
         );
         addTearDown(container.dispose);
 
-        final notifier = container.read(chapterReaderProvider('chapter_1').notifier);
+        final notifier = container.read(chapterReaderProvider(param).notifier);
         async.elapse(const Duration(milliseconds: 10)); // Complete initial load
 
         // Change to page 1
@@ -226,7 +228,7 @@ void main() {
 
     test('swapping layout modes (toggleLayoutMode) successfully updates layout state', () async {
       mockRepository.fetchChapterHandler = (chapterId) => Future.value(null);
-      mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data'}) => Future.value([]);
+      mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data', language}) => Future.value([]);
 
       final container = ProviderContainer(
         overrides: [
@@ -235,26 +237,26 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final notifier = container.read(chapterReaderProvider('chapter_1').notifier);
+      final notifier = container.read(chapterReaderProvider(param).notifier);
       await pumpEventQueue();
 
       // Initial layout mode (by default isHorizontalLayout = true)
-      expect(container.read(chapterReaderProvider('chapter_1')).isHorizontalLayout, true);
+      expect(container.read(chapterReaderProvider(param)).isHorizontalLayout, true);
 
       // Toggle layout mode
       notifier.toggleLayoutMode();
-      expect(container.read(chapterReaderProvider('chapter_1')).isHorizontalLayout, false);
+      expect(container.read(chapterReaderProvider(param)).isHorizontalLayout, false);
 
       // Toggle again
       notifier.toggleLayoutMode();
-      expect(container.read(chapterReaderProvider('chapter_1')).isHorizontalLayout, true);
+      expect(container.read(chapterReaderProvider(param)).isHorizontalLayout, true);
     });
 
     test('calling dispose() on notifier immediately flushes/saves progress if sync timer is active', () {
       fakeAsync((async) {
         final mockPages = ['page1.jpg', 'page2.jpg', 'page3.jpg'];
         mockRepository.fetchChapterHandler = (chapterId) => Future.value(null);
-        mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data'}) => Future.value(mockPages);
+        mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data', language}) => Future.value(mockPages);
 
         int updateProgressCallCount = 0;
         int? lastUpdatedPageIndex;
@@ -270,7 +272,7 @@ void main() {
           ],
         );
 
-        final notifier = container.read(chapterReaderProvider('chapter_1').notifier);
+        final notifier = container.read(chapterReaderProvider(param).notifier);
         async.elapse(const Duration(milliseconds: 10)); // Complete initial load
 
         // Change page to 2 (starts progress timer)
@@ -294,7 +296,7 @@ void main() {
       fakeAsync((async) {
         final mockPages = ['page1.jpg', 'page2.jpg', 'page3.jpg'];
         mockRepository.fetchChapterHandler = (chapterId) => Future.value(null);
-        mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data'}) => Future.value(mockPages);
+        mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data', language}) => Future.value(mockPages);
 
         int updateProgressCallCount = 0;
         mockRepository.updateReadingProgressHandler = (chapterId, pageIndex) {
@@ -308,7 +310,7 @@ void main() {
           ],
         );
 
-        container.read(chapterReaderProvider('chapter_1').notifier);
+        container.read(chapterReaderProvider(param).notifier);
         async.elapse(const Duration(milliseconds: 10)); // Complete initial load
 
         // Dispose container (no page changes, so sync timer is not active)
@@ -330,7 +332,7 @@ void main() {
           data: {'message': 'Custom Backend Error Message'},
         ),
       );
-      mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data'}) {
+      mockRepository.fetchChapterPagesHandler = (chapterId, {quality = 'data', language}) {
         return Future.error(dioException);
       };
 
@@ -341,10 +343,10 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      container.read(chapterReaderProvider('chapter_1'));
+      container.read(chapterReaderProvider(param));
       await pumpEventQueue();
 
-      final state = container.read(chapterReaderProvider('chapter_1'));
+      final state = container.read(chapterReaderProvider(param));
       expect(state.isLoading, false);
       expect(state.errorMessage, equals('Custom Backend Error Message'));
     });

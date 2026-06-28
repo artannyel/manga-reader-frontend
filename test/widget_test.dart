@@ -60,7 +60,7 @@ class MockMangaRepository implements MangaRepository {
   Future<bool> isFavorite(String id) async => false;
 
   @override
-  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data'}) async {
+  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data', String? language}) async {
     return const [];
   }
 

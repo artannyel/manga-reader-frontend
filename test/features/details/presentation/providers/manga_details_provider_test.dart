@@ -55,7 +55,7 @@ class MockMangaRepository implements MangaRepository {
   }
 
   @override
-  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data'}) {
+  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data', String? language}) {
     throw UnimplementedError();
   }
 
@@ -79,12 +79,13 @@ Manga _createManga({required String id, bool isFavorite = false}) {
   );
 }
 
-Chapter _createChapter({required String id, required String chapterNumber, required String title}) {
+Chapter _createChapter({required String id, required String chapterNumber, required String title, String language = 'en'}) {
   return Chapter(
     id: id,
     mangaId: 'manga_1',
     chapterNumber: chapterNumber,
     title: title,
+    language: language,
     pagesCount: 20,
     downloadStatus: DownloadStatus.notDownloaded,
     lastReadPage: 0,
@@ -112,7 +113,7 @@ void main() {
         _createChapter(id: 'c1', chapterNumber: '1', title: 'Chapter 1'),
         _createChapter(id: 'c2', chapterNumber: '2', title: 'Chapter 2'),
       ];
-      final details = MangaDetails(manga: manga, chapters: chapters);
+      final details = MangaDetails(manga: manga, chapters: chapters, availableLanguages: ['en'], descriptions: {});
 
       mockRepository.fetchMangaDetailsHandler = (id) {
         expect(id, mangaId);
@@ -167,7 +168,7 @@ void main() {
 
     test('toggles sort order state correctly', () async {
       final manga = _createManga(id: mangaId);
-      final details = MangaDetails(manga: manga, chapters: []);
+      final details = MangaDetails(manga: manga, chapters: [], availableLanguages: [], descriptions: {});
       mockRepository.fetchMangaDetailsHandler = (id) => Future.value(details);
 
       final container = ProviderContainer(
@@ -201,7 +202,7 @@ void main() {
 
       final unsortedChapters = [chapter3, chapter1, chapter4, chapter2];
       final manga = _createManga(id: mangaId);
-      final details = MangaDetails(manga: manga, chapters: unsortedChapters);
+      final details = MangaDetails(manga: manga, chapters: unsortedChapters, availableLanguages: ['en'], descriptions: {});
       mockRepository.fetchMangaDetailsHandler = (id) => Future.value(details);
 
       final container = ProviderContainer(
@@ -248,7 +249,7 @@ void main() {
 
     test('toggles favorite status in database and updates state and invalidates feed provider', () async {
       final manga = _createManga(id: mangaId, isFavorite: false);
-      final details = MangaDetails(manga: manga, chapters: []);
+      final details = MangaDetails(manga: manga, chapters: [], availableLanguages: [], descriptions: {});
       mockRepository.fetchMangaDetailsHandler = (id) => Future.value(details);
       
       bool toggleFavoriteCalled = false;

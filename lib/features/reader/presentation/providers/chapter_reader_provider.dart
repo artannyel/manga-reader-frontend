@@ -4,28 +4,49 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manga_reader/features/library/domain/repositories/manga_repository.dart';
 import 'chapter_reader_state.dart';
 
-final chapterReaderProvider = StateNotifierProvider.family<ChapterReaderNotifier, ChapterReaderState, String>((ref, chapterId) {
+class ChapterReaderParam {
+  final String chapterId;
+  final String? language;
+
+  const ChapterReaderParam({
+    required this.chapterId,
+    this.language,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ChapterReaderParam &&
+          runtimeType == other.runtimeType &&
+          chapterId == other.chapterId &&
+          language == other.language;
+
+  @override
+  int get hashCode => chapterId.hashCode ^ language.hashCode;
+}
+
+final chapterReaderProvider = StateNotifierProvider.family<ChapterReaderNotifier, ChapterReaderState, ChapterReaderParam>((ref, param) {
   final repository = ref.watch(mangaRepositoryProvider);
-  return ChapterReaderNotifier(repository, chapterId);
+  return ChapterReaderNotifier(repository, param);
 });
 
 class ChapterReaderNotifier extends StateNotifier<ChapterReaderState> {
   final MangaRepository _repository;
-  final String _chapterId;
+  final ChapterReaderParam _param;
   Timer? _progressSyncTimer;
 
-  ChapterReaderNotifier(this._repository, this._chapterId) : super(const ChapterReaderState()) {
+  ChapterReaderNotifier(this._repository, this._param) : super(const ChapterReaderState()) {
     loadPages();
   }
 
   Future<void> loadPages() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      final chapter = await _repository.fetchChapter(_chapterId);
+      final chapter = await _repository.fetchChapter(_param.chapterId);
       final title = chapter?.title ?? 'Capítulo';
       final initialPage = chapter?.lastReadPage ?? 0;
 
-      final pages = await _repository.fetchChapterPages(_chapterId);
+      final pages = await _repository.fetchChapterPages(_param.chapterId, language: _param.language);
 
       state = state.copyWith(
         isLoading: false,
@@ -64,7 +85,7 @@ class ChapterReaderNotifier extends StateNotifier<ChapterReaderState> {
 
     // Debounce/Throttle progress saving by 1.5 seconds to prevent scroll lag
     _progressSyncTimer = Timer(const Duration(milliseconds: 1500), () {
-      _repository.updateReadingProgress(_chapterId, clampedIndex);
+      _repository.updateReadingProgress(_param.chapterId, clampedIndex);
     });
   }
 
@@ -75,7 +96,7 @@ class ChapterReaderNotifier extends StateNotifier<ChapterReaderState> {
   @override
   void dispose() {
     if (_progressSyncTimer != null && _progressSyncTimer!.isActive) {
-      _repository.updateReadingProgress(_chapterId, state.currentPageIndex);
+      _repository.updateReadingProgress(_param.chapterId, state.currentPageIndex);
       _progressSyncTimer!.cancel();
     }
     super.dispose();

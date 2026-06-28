@@ -16,6 +16,7 @@ class ChapterEntity {
 
   late String chapterNumber;
   late String title;
+  late String language;
   late int pagesCount;
   
   // Local disk paths for the downloaded images

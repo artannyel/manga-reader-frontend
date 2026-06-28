@@ -6,6 +6,7 @@ class ChapterModel extends Chapter {
     required super.mangaId,
     required super.chapterNumber,
     required super.title,
+    required super.language,
     required super.pagesCount,
     required super.downloadStatus,
     super.localPagePaths,
@@ -28,6 +29,7 @@ class ChapterModel extends Chapter {
       mangaId: mangaId,
       chapterNumber: json['chapter_number'] as String? ?? '',
       title: json['title'] as String? ?? 'Capítulo ${json['chapter_number'] ?? ""}',
+      language: json['language'] as String? ?? 'en',
       pagesCount: json['pages_count'] as int? ?? 0,
       downloadStatus: downloadStatus,
       localPagePaths: localPagePaths,
@@ -42,6 +44,7 @@ class ChapterModel extends Chapter {
       'id': id,
       'chapter_number': chapterNumber,
       'title': title,
+      'language': language,
       'pages_count': pagesCount,
     };
   }

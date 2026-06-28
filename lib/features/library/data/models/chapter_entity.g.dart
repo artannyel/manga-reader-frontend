@@ -33,43 +33,48 @@ const ChapterEntitySchema = CollectionSchema(
       name: r'downloadedAt',
       type: IsarType.dateTime,
     ),
-    r'lastReadAt': PropertySchema(
+    r'language': PropertySchema(
       id: 3,
+      name: r'language',
+      type: IsarType.string,
+    ),
+    r'lastReadAt': PropertySchema(
+      id: 4,
       name: r'lastReadAt',
       type: IsarType.dateTime,
     ),
     r'lastReadPage': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'lastReadPage',
       type: IsarType.long,
     ),
     r'localPagePaths': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'localPagePaths',
       type: IsarType.stringList,
     ),
     r'mangaDexId': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'mangaDexId',
       type: IsarType.string,
     ),
     r'mangaId': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'mangaId',
       type: IsarType.string,
     ),
     r'pagesCount': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'pagesCount',
       type: IsarType.long,
     ),
     r'readPercentage': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'readPercentage',
       type: IsarType.double,
     ),
     r'title': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'title',
       type: IsarType.string,
     )
@@ -135,6 +140,7 @@ int _chapterEntityEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.chapterNumber.length * 3;
+  bytesCount += 3 + object.language.length * 3;
   {
     final list = object.localPagePaths;
     if (list != null) {
@@ -162,14 +168,15 @@ void _chapterEntitySerialize(
   writer.writeString(offsets[0], object.chapterNumber);
   writer.writeByte(offsets[1], object.downloadStatus.index);
   writer.writeDateTime(offsets[2], object.downloadedAt);
-  writer.writeDateTime(offsets[3], object.lastReadAt);
-  writer.writeLong(offsets[4], object.lastReadPage);
-  writer.writeStringList(offsets[5], object.localPagePaths);
-  writer.writeString(offsets[6], object.mangaDexId);
-  writer.writeString(offsets[7], object.mangaId);
-  writer.writeLong(offsets[8], object.pagesCount);
-  writer.writeDouble(offsets[9], object.readPercentage);
-  writer.writeString(offsets[10], object.title);
+  writer.writeString(offsets[3], object.language);
+  writer.writeDateTime(offsets[4], object.lastReadAt);
+  writer.writeLong(offsets[5], object.lastReadPage);
+  writer.writeStringList(offsets[6], object.localPagePaths);
+  writer.writeString(offsets[7], object.mangaDexId);
+  writer.writeString(offsets[8], object.mangaId);
+  writer.writeLong(offsets[9], object.pagesCount);
+  writer.writeDouble(offsets[10], object.readPercentage);
+  writer.writeString(offsets[11], object.title);
 }
 
 ChapterEntity _chapterEntityDeserialize(
@@ -185,14 +192,15 @@ ChapterEntity _chapterEntityDeserialize(
       DownloadStatus.notDownloaded;
   object.downloadedAt = reader.readDateTimeOrNull(offsets[2]);
   object.id = id;
-  object.lastReadAt = reader.readDateTime(offsets[3]);
-  object.lastReadPage = reader.readLong(offsets[4]);
-  object.localPagePaths = reader.readStringList(offsets[5]);
-  object.mangaDexId = reader.readString(offsets[6]);
-  object.mangaId = reader.readString(offsets[7]);
-  object.pagesCount = reader.readLong(offsets[8]);
-  object.readPercentage = reader.readDouble(offsets[9]);
-  object.title = reader.readString(offsets[10]);
+  object.language = reader.readString(offsets[3]);
+  object.lastReadAt = reader.readDateTime(offsets[4]);
+  object.lastReadPage = reader.readLong(offsets[5]);
+  object.localPagePaths = reader.readStringList(offsets[6]);
+  object.mangaDexId = reader.readString(offsets[7]);
+  object.mangaId = reader.readString(offsets[8]);
+  object.pagesCount = reader.readLong(offsets[9]);
+  object.readPercentage = reader.readDouble(offsets[10]);
+  object.title = reader.readString(offsets[11]);
   return object;
 }
 
@@ -212,20 +220,22 @@ P _chapterEntityDeserializeProp<P>(
     case 2:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 3:
-      return (reader.readDateTime(offset)) as P;
-    case 4:
-      return (reader.readLong(offset)) as P;
-    case 5:
-      return (reader.readStringList(offset)) as P;
-    case 6:
       return (reader.readString(offset)) as P;
+    case 4:
+      return (reader.readDateTime(offset)) as P;
+    case 5:
+      return (reader.readLong(offset)) as P;
+    case 6:
+      return (reader.readStringList(offset)) as P;
     case 7:
       return (reader.readString(offset)) as P;
     case 8:
-      return (reader.readLong(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 9:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 10:
+      return (reader.readDouble(offset)) as P;
+    case 11:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -906,6 +916,142 @@ extension ChapterEntityQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterFilterCondition>
+      languageEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'language',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterFilterCondition>
+      languageGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'language',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterFilterCondition>
+      languageLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'language',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterFilterCondition>
+      languageBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'language',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterFilterCondition>
+      languageStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'language',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterFilterCondition>
+      languageEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'language',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterFilterCondition>
+      languageContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'language',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterFilterCondition>
+      languageMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'language',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterFilterCondition>
+      languageIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'language',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterFilterCondition>
+      languageIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'language',
+        value: '',
       ));
     });
   }
@@ -1847,6 +1993,19 @@ extension ChapterEntityQuerySortBy
     });
   }
 
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterSortBy> sortByLanguage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'language', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterSortBy>
+      sortByLanguageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'language', Sort.desc);
+    });
+  }
+
   QueryBuilder<ChapterEntity, ChapterEntity, QAfterSortBy> sortByLastReadAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastReadAt', Sort.asc);
@@ -1995,6 +2154,19 @@ extension ChapterEntityQuerySortThenBy
     });
   }
 
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterSortBy> thenByLanguage() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'language', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ChapterEntity, ChapterEntity, QAfterSortBy>
+      thenByLanguageDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'language', Sort.desc);
+    });
+  }
+
   QueryBuilder<ChapterEntity, ChapterEntity, QAfterSortBy> thenByLastReadAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastReadAt', Sort.asc);
@@ -2111,6 +2283,13 @@ extension ChapterEntityQueryWhereDistinct
     });
   }
 
+  QueryBuilder<ChapterEntity, ChapterEntity, QDistinct> distinctByLanguage(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'language', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<ChapterEntity, ChapterEntity, QDistinct> distinctByLastReadAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lastReadAt');
@@ -2192,6 +2371,12 @@ extension ChapterEntityQueryProperty
       downloadedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'downloadedAt');
+    });
+  }
+
+  QueryBuilder<ChapterEntity, String, QQueryOperations> languageProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'language');
     });
   }
 

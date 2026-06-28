@@ -162,7 +162,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
           final chapterId = state.pathParameters['chapterId'] ?? '';
-          return ChapterReaderScreen(mangaId: id, chapterId: chapterId);
+          final language = state.uri.queryParameters['language'];
+          return ChapterReaderScreen(mangaId: id, chapterId: chapterId, language: language);
         },
       ),
     ],

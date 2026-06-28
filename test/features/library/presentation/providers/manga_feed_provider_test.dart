@@ -54,7 +54,7 @@ class MockMangaRepository implements MangaRepository {
   }
 
   @override
-  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data'}) {
+  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data', String? language}) {
     throw UnimplementedError();
   }
 

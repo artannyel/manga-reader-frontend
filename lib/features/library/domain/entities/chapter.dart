@@ -11,6 +11,7 @@ class Chapter {
   final String mangaId;
   final String chapterNumber;
   final String title;
+  final String language;
   final int pagesCount;
   final DownloadStatus downloadStatus;
   final List<String>? localPagePaths;
@@ -23,6 +24,7 @@ class Chapter {
     required this.mangaId,
     required this.chapterNumber,
     required this.title,
+    required this.language,
     required this.pagesCount,
     required this.downloadStatus,
     this.localPagePaths,
@@ -36,6 +38,7 @@ class Chapter {
     String? mangaId,
     String? chapterNumber,
     String? title,
+    String? language,
     int? pagesCount,
     DownloadStatus? downloadStatus,
     List<String>? localPagePaths,
@@ -48,6 +51,7 @@ class Chapter {
       mangaId: mangaId ?? this.mangaId,
       chapterNumber: chapterNumber ?? this.chapterNumber,
       title: title ?? this.title,
+      language: language ?? this.language,
       pagesCount: pagesCount ?? this.pagesCount,
       downloadStatus: downloadStatus ?? this.downloadStatus,
       localPagePaths: localPagePaths ?? this.localPagePaths,

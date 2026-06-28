@@ -23,13 +23,13 @@ import 'package:manga_reader/features/library/data/models/manga_entity.dart';
 // --- Manual Mock for MangaRepository ---
 
 class MockMangaRepository implements MangaRepository {
-  Future<List<String>> Function(String chapterId, {String quality})? fetchChapterPagesHandler;
+  Future<List<String>> Function(String chapterId, {String quality, String? language})? fetchChapterPagesHandler;
   Future<MangaDetails> Function(String id)? fetchMangaDetailsHandler;
 
   @override
-  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data'}) async {
+  Future<List<String>> fetchChapterPages(String chapterId, {String quality = 'data', String? language}) async {
     if (fetchChapterPagesHandler != null) {
-      return fetchChapterPagesHandler!(chapterId, quality: quality);
+      return fetchChapterPagesHandler!(chapterId, quality: quality, language: language);
     }
     return [];
   }
@@ -158,6 +158,7 @@ void main() {
       mangaId: mangaId,
       chapterNumber: '1',
       title: 'Capítulo 1',
+      language: 'en',
       pagesCount: 2,
       downloadStatus: DownloadStatus.notDownloaded,
       lastReadPage: 0,
@@ -169,6 +170,7 @@ void main() {
       ..mangaId = mangaId
       ..chapterNumber = '1'
       ..title = 'Capítulo 1'
+      ..language = 'en'
       ..pagesCount = 2
       ..downloadStatus = DownloadStatus.notDownloaded
       ..lastReadPage = 0
@@ -181,7 +183,7 @@ void main() {
     });
 
     // Stub repository handlers
-    mockMangaRepository.fetchChapterPagesHandler = (id, {String quality = 'data'}) async {
+    mockMangaRepository.fetchChapterPagesHandler = (id, {String quality = 'data', String? language}) async {
       expect(id, chapterId);
       return [
         'http://example.com/page0.jpg',
@@ -199,6 +201,8 @@ void main() {
           isFavorite: false,
         ),
         chapters: [],
+        availableLanguages: [],
+        descriptions: {},
       );
     };
 

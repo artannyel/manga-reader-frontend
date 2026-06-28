@@ -69,9 +69,14 @@ class MangaDetailsScreen extends ConsumerWidget {
     final details = detailsState.details!;
     final manga = details.manga;
 
+    // Get the current selectedLanguage from state
+    final selectedLanguage = detailsState.selectedLanguage;
+
+    // Filter chapters by selected language
+    final filteredChapters = details.chapters.where((c) => c.language == selectedLanguage).toList();
+
     // Chronological sorting
-    final chapters = List<Chapter>.from(details.chapters);
-    chapters.sort((a, b) {
+    filteredChapters.sort((a, b) {
       final numA = _parseChapterNumber(a.chapterNumber);
       final numB = _parseChapterNumber(b.chapterNumber);
       final cmp = numA.compareTo(numB);
@@ -282,14 +287,15 @@ class MangaDetailsScreen extends ConsumerWidget {
                             const Text(
                               'Sinopse',
                               style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              manga.description ?? 'Sem sinopse disponível.',
+                              (selectedLanguage != null && details.descriptions.containsKey(selectedLanguage))
+                                  ? details.descriptions[selectedLanguage]!
+                                  : (manga.description ?? 'Sem sinopse disponível.'),
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey.shade300,
@@ -309,7 +315,7 @@ class MangaDetailsScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Capítulos (${chapters.length})',
+                        'Capítulos (${filteredChapters.length})',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -333,8 +339,59 @@ class MangaDetailsScreen extends ConsumerWidget {
                   ),
                   const Divider(),
 
+                  // Language dropdown
+                  if (details.availableLanguages.isNotEmpty) ...[
+                    Row(
+                      children: [
+                        const Text(
+                          'Idioma: ',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade900,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.white24, width: 1),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: selectedLanguage,
+                              dropdownColor: Colors.grey.shade900,
+                              icon: const Icon(Icons.arrow_drop_down, color: Colors.redAccent),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              onChanged: (String? newValue) {
+                                if (newValue != null) {
+                                  ref
+                                      .read(mangaDetailsProvider(mangaId).notifier)
+                                      .changeLanguage(newValue);
+                                }
+                              },
+                              items: details.availableLanguages
+                                  .map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value.toUpperCase()),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
                   // Chapter Feed List
-                  if (chapters.isEmpty)
+                  if (filteredChapters.isEmpty)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 24.0),
                       child: Center(
@@ -349,9 +406,9 @@ class MangaDetailsScreen extends ConsumerWidget {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       padding: const EdgeInsets.only(bottom: 24),
-                      itemCount: chapters.length,
+                      itemCount: filteredChapters.length,
                       itemBuilder: (context, index) {
-                        final chapter = chapters[index];
+                        final chapter = filteredChapters[index];
                         return Card(
                           margin: const EdgeInsets.only(bottom: 8),
                           color: Colors.grey.shade900,
@@ -386,7 +443,7 @@ class MangaDetailsScreen extends ConsumerWidget {
                             ),
                             onTap: () {
                               context.push(
-                                '/manga/$mangaId/chapter/${chapter.id}',
+                                '/manga/$mangaId/chapter/${chapter.id}?language=$selectedLanguage',
                               );
                             },
                           ),

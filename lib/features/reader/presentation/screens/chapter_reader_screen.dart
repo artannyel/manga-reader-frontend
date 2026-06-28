@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,11 +12,13 @@ import '../providers/chapter_reader_state.dart';
 class ChapterReaderScreen extends ConsumerStatefulWidget {
   final String mangaId;
   final String chapterId;
+  final String? language;
 
   const ChapterReaderScreen({
     super.key,
     required this.mangaId,
     required this.chapterId,
+    this.language,
   });
 
   @override
@@ -27,13 +30,21 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
   late PageController _pageController;
   late ScrollController _scrollController;
 
+  ChapterReaderParam get _param => ChapterReaderParam(
+        chapterId: widget.chapterId,
+        language: widget.language,
+      );
+
   @override
   void initState() {
     super.initState();
     // Enable immersive full-screen mode by hiding system overlays
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    
-    final initialState = ref.read(chapterReaderProvider(widget.chapterId));
+    if (kDebugMode) {
+      print("Chapter id: ${widget.chapterId}");
+      print("Manga id: ${widget.mangaId}");
+    }
+    final initialState = ref.read(chapterReaderProvider(_param));
     _pageController = PageController(initialPage: initialState.currentPageIndex);
     _scrollController = ScrollController();
     
@@ -51,7 +62,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
   }
 
   void _onScroll() {
-    final state = ref.read(chapterReaderProvider(widget.chapterId));
+    final state = ref.read(chapterReaderProvider(_param));
     if (state.isHorizontalLayout || state.pages.isEmpty) return;
 
     if (_scrollController.hasClients) {
@@ -60,7 +71,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
       final newPage = (offset / itemHeight).round().clamp(0, state.pages.length - 1);
       
       if (newPage != state.currentPageIndex) {
-        ref.read(chapterReaderProvider(widget.chapterId).notifier).setPage(newPage);
+        ref.read(chapterReaderProvider(_param).notifier).setPage(newPage);
       }
     }
   }
@@ -79,10 +90,10 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
   }
 
   void _navigateToPage(int targetPage, bool isHorizontal) {
-    final state = ref.read(chapterReaderProvider(widget.chapterId));
+    final state = ref.read(chapterReaderProvider(_param));
     if (targetPage < 0 || targetPage >= state.pages.length) return;
     
-    ref.read(chapterReaderProvider(widget.chapterId).notifier).setPage(targetPage);
+    ref.read(chapterReaderProvider(_param).notifier).setPage(targetPage);
     
     if (isHorizontal) {
       if (_pageController.hasClients) {
@@ -134,12 +145,12 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(chapterReaderProvider(widget.chapterId));
-    final notifier = ref.read(chapterReaderProvider(widget.chapterId).notifier);
+    final state = ref.watch(chapterReaderProvider(_param));
+    final notifier = ref.read(chapterReaderProvider(_param).notifier);
 
     // Synchronize page controllers only on initial page load or when layout mode changes
     ref.listen<ChapterReaderState>(
-      chapterReaderProvider(widget.chapterId),
+      chapterReaderProvider(_param),
       (previous, next) {
         if (next.isLoading || next.pages.isEmpty) return;
 
@@ -228,7 +239,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                   minimumSize: const Size(0, 40),
                 ),
                 onPressed: () {
-                  ref.read(chapterReaderProvider(widget.chapterId).notifier).loadPages();
+                  ref.read(chapterReaderProvider(_param).notifier).loadPages();
                 },
                 child: const Text('Tentar Novamente'),
               ),
@@ -252,7 +263,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
         controller: _pageController,
         itemCount: state.pages.length,
         onPageChanged: (index) {
-          ref.read(chapterReaderProvider(widget.chapterId).notifier).setPage(index);
+          ref.read(chapterReaderProvider(_param).notifier).setPage(index);
         },
         itemBuilder: (context, index) {
           return Center(
@@ -309,7 +320,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                     minimumSize: const Size(0, 40),
                   ),
                   onPressed: () {
-                    ref.read(chapterReaderProvider(widget.chapterId).notifier).loadPages();
+                    ref.read(chapterReaderProvider(_param).notifier).loadPages();
                   },
                   child: const Text('Recarregar'),
                 ),

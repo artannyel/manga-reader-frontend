@@ -5,12 +5,14 @@ class MangaDetailsState {
   final bool isLoading;
   final String? errorMessage;
   final bool isSortAscending;
+  final String? selectedLanguage;
 
   MangaDetailsState({
     this.details,
     required this.isLoading,
     this.errorMessage,
     required this.isSortAscending,
+    this.selectedLanguage,
   });
 
   factory MangaDetailsState.initial() => MangaDetailsState(
@@ -18,6 +20,7 @@ class MangaDetailsState {
         isLoading: true,
         errorMessage: null,
         isSortAscending: true,
+        selectedLanguage: null,
       );
 
   MangaDetailsState copyWith({
@@ -25,12 +28,14 @@ class MangaDetailsState {
     bool? isLoading,
     String? errorMessage,
     bool? isSortAscending,
+    String? selectedLanguage,
   }) {
     return MangaDetailsState(
       details: details ?? this.details,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
       isSortAscending: isSortAscending ?? this.isSortAscending,
+      selectedLanguage: selectedLanguage ?? this.selectedLanguage,
     );
   }
 }

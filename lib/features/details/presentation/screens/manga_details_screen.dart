@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../features/library/domain/entities/chapter.dart';
 import '../providers/manga_details_provider.dart';
+import '../../../../core/services/download_service.dart';
 
 class MangaDetailsScreen extends ConsumerWidget {
   final String mangaId;
@@ -437,9 +438,16 @@ class MangaDetailsScreen extends ConsumerWidget {
                                 color: Colors.grey.shade400,
                               ),
                             ),
-                            trailing: const Icon(
-                              Icons.play_arrow,
-                              color: Colors.redAccent,
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildDownloadButton(ref, chapter),
+                                const SizedBox(width: 8),
+                                const Icon(
+                                  Icons.play_arrow,
+                                  color: Colors.redAccent,
+                                ),
+                              ],
                             ),
                             onTap: () {
                               context.push(
@@ -459,5 +467,62 @@ class MangaDetailsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildDownloadButton(WidgetRef ref, Chapter chapter) {
+    final downloadState = ref.watch(downloadServiceProvider);
+    final downloadStatus = downloadState.statuses[chapter.id] ?? chapter.downloadStatus;
+    final progress = downloadState.progress[chapter.id] ?? 0.0;
+
+    switch (downloadStatus) {
+      case DownloadStatus.downloaded:
+        return const Icon(
+          Icons.check_circle,
+          color: Colors.green,
+          size: 24,
+        );
+      case DownloadStatus.downloading:
+        return SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(
+            value: progress,
+            strokeWidth: 2,
+            color: Colors.redAccent,
+          ),
+        );
+      case DownloadStatus.queued:
+        return const SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: Colors.grey,
+          ),
+        );
+      case DownloadStatus.failed:
+        return IconButton(
+          icon: const Icon(
+            Icons.error_outline,
+            color: Colors.red,
+            size: 24,
+          ),
+          onPressed: () {
+            ref.read(downloadServiceProvider.notifier).downloadChapter(chapter);
+          },
+        );
+      case DownloadStatus.notDownloaded:
+      default:
+        return IconButton(
+          icon: const Icon(
+            Icons.download,
+            color: Colors.grey,
+            size: 24,
+          ),
+          onPressed: () {
+            ref.read(downloadServiceProvider.notifier).downloadChapter(chapter);
+          },
+        );
+    }
   }
 }

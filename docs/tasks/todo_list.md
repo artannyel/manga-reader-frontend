@@ -25,6 +25,14 @@ This checklist tracks the implementation of features for the Manga Reader Flutte
 *   [ ] **1.4 Basic Routing**
     *   [ ] Create router instance configuration containing all route paths.
     *   [ ] Implement basic shell page widgets acting as navigation layout targets.
+*   [ ] **1.5 Environment Configurations & Android Flavors**
+    *   [ ] Add `config/` entry to `.gitignore` to prevent configuration leakage.
+    *   [ ] Create `config/dev.json`, `config/prod.json`, and `config/dev.json.example` configuration files.
+    *   [ ] Set up Android product flavors in `android/app/build.gradle` (dimension "default", flavors `dev` and `prod`, suffixes, and resValues).
+    *   [ ] Bind application name via `@string/app_name` resource inside `android/app/src/main/AndroidManifest.xml`.
+    *   [ ] Implement compile-time variables check using `String.fromEnvironment` in `ApiConstants` under `lib/core/network/api_constants.dart`.
+    *   [ ] Verify dev build runs using `flutter run --flavor dev --dart-define-from-file=config/dev.json`.
+    *   [ ] Verify prod build runs using `flutter run --flavor prod --dart-define-from-file=config/prod.json`.
 
 ---
 

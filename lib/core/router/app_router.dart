@@ -13,6 +13,12 @@ import '../../features/reader/presentation/screens/chapter_reader_screen.dart';
 import '../../features/downloads/presentation/screens/downloads_screen.dart';
 import '../../features/downloads/presentation/screens/offline_screen.dart';
 
+import 'package:isar/isar.dart';
+import '../services/connectivity_service.dart';
+import '../services/isar_service.dart';
+import '../../features/library/data/models/chapter_entity.dart';
+import '../../features/library/domain/entities/chapter.dart';
+
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 class RouterNotifier extends ChangeNotifier {
@@ -20,6 +26,9 @@ class RouterNotifier extends ChangeNotifier {
 
   RouterNotifier(this._ref) {
     _ref.listen(authProvider, (previous, next) {
+      notifyListeners();
+    });
+    _ref.listen(connectivityProvider, (previous, next) {
       notifyListeners();
     });
   }
@@ -36,7 +45,35 @@ final routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/login',
     refreshListenable: routerNotifier,
-    redirect: (context, state) {
+    redirect: (context, state) async {
+      final connectivity = ref.read(connectivityProvider);
+      final isOffline = connectivity == ConnectivityStatus.offline;
+      final location = state.matchedLocation;
+
+      if (isOffline) {
+        if (location == '/downloads' || location == '/offline') {
+          return null;
+        }
+        if (location == '/manga/:id/chapter/:chapterId') {
+          final chapterId = state.pathParameters['chapterId'];
+          if (chapterId != null) {
+            final isarService = ref.read(isarServiceProvider);
+            final chapter = await isarService.isar.chapterEntitys
+                .filter()
+                .mangaDexIdEqualTo(chapterId)
+                .findFirst();
+            if (chapter != null && chapter.downloadStatus == DownloadStatus.downloaded) {
+              return null;
+            }
+          }
+        }
+        return '/offline';
+      }
+
+      if (location == '/offline') {
+        return '/';
+      }
+
       final authState = ref.read(authProvider);
 
       // Do not redirect while checking initial auth status
@@ -45,16 +82,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       final isAuthenticated = authState is AuthAuthenticated;
-      final location = state.matchedLocation;
 
       final isLoggingIn = location == '/login';
       final isRegistering = location == '/register';
-      final isOffline = location == '/offline';
-      final isDownloads = location == '/downloads';
 
       if (!isAuthenticated) {
         // If not authenticated and trying to access a private route
-        if (!isLoggingIn && !isRegistering && !isOffline && !isDownloads) {
+        if (!isLoggingIn && !isRegistering) {
           return '/login';
         }
       } else {

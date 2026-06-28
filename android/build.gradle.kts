@@ -20,10 +20,17 @@ subprojects {
 }
 
 subprojects {
-    afterEvaluate {
+    val configureNamespace = {
         val android = extensions.findByName("android") as? com.android.build.gradle.BaseExtension
         if (android != null && android.namespace == null) {
             android.namespace = "com.example.${project.name.replace("-", "_").replace(".", "_")}"
+        }
+    }
+    if (project.state.executed) {
+        configureNamespace()
+    } else {
+        project.afterEvaluate {
+            configureNamespace()
         }
     }
 }

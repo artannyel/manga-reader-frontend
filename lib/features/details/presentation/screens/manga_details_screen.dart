@@ -441,7 +441,7 @@ class MangaDetailsScreen extends ConsumerWidget {
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                _buildDownloadButton(ref, chapter),
+                                _buildDownloadButton(context, ref, chapter),
                                 const SizedBox(width: 8),
                                 const Icon(
                                   Icons.play_arrow,
@@ -469,17 +469,46 @@ class MangaDetailsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDownloadButton(WidgetRef ref, Chapter chapter) {
+  Widget _buildDownloadButton(BuildContext context, WidgetRef ref, Chapter chapter) {
     final downloadState = ref.watch(downloadServiceProvider);
     final downloadStatus = downloadState.statuses[chapter.id] ?? chapter.downloadStatus;
     final progress = downloadState.progress[chapter.id] ?? 0.0;
 
     switch (downloadStatus) {
       case DownloadStatus.downloaded:
-        return const Icon(
-          Icons.check_circle,
-          color: Colors.green,
-          size: 24,
+        return IconButton(
+          icon: const Icon(
+            Icons.check_circle,
+            color: Colors.green,
+            size: 24,
+          ),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext dialogContext) {
+                return AlertDialog(
+                  title: const Text('Excluir Capítulo'),
+                  content: Text('Deseja excluir o download do Capítulo ${chapter.chapterNumber}?'),
+                  actions: [
+                    TextButton(
+                      child: const Text('Cancelar'),
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                    ),
+                    TextButton(
+                      child: const Text(
+                        'Excluir',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                      onPressed: () {
+                        Navigator.of(dialogContext).pop();
+                        ref.read(downloadServiceProvider.notifier).deleteDownloadedChapter(chapter.id);
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
         );
       case DownloadStatus.downloading:
         return SizedBox(

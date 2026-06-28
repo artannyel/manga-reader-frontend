@@ -295,6 +295,47 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
       }
     });
   }
+
+  Future<void> deleteDownloadedChapter(String chapterId) async {
+    final isarService = _ref.read(isarServiceProvider);
+
+    // 1. Update status in local database first
+    await isarService.isar.writeTxn(() async {
+      final existing = await isarService.isar.chapterEntitys
+          .filter()
+          .mangaDexIdEqualTo(chapterId)
+          .findFirst();
+      if (existing != null) {
+        existing.downloadStatus = DownloadStatus.notDownloaded;
+        existing.localPagePaths = null;
+        existing.downloadedAt = null;
+        await isarService.isar.chapterEntitys.put(existing);
+      }
+    });
+
+    // 2. Remove files from local disk
+    try {
+      final supportDir = await getApplicationSupportDirectory();
+      final chapterDir = Directory('${supportDir.path}/downloads/$chapterId');
+      if (await chapterDir.exists()) {
+        await chapterDir.delete(recursive: true);
+      }
+    } catch (e) {
+      debugPrint('Failed to delete downloaded files for chapter $chapterId: $e');
+    }
+
+    // 3. Update state
+    final updatedStatuses = Map<String, DownloadStatus>.from(state.statuses);
+    updatedStatuses.remove(chapterId);
+    
+    final updatedProgress = Map<String, double>.from(state.progress);
+    updatedProgress.remove(chapterId);
+
+    state = state.copyWith(
+      statuses: updatedStatuses,
+      progress: updatedProgress,
+    );
+  }
 }
 
 final downloadServiceProvider = StateNotifierProvider<DownloadNotifier, DownloadState>((ref) {
